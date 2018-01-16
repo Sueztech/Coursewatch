@@ -5,4 +5,9 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
+    <string name="logoContentDesc">Logo</string>
+    <string name="emailHint">Email</string>
+    <string name="passwordHint">Password</string>
+    <string name="signupText">No account yet? Sign up</string>
+    <string name="loginText">Login</string>
 </resources>

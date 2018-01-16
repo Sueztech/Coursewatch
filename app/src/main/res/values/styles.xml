@@ -17,6 +17,27 @@
         <item name="android:windowBackground">@drawable/launch_screen</item>
     </style>
 
+    <style name="AppTheme.LoginActivity" parent="AppTheme.NoActionBar">
+
+        <item name="android:windowBackground">@color/colorPrimary</item>
+
+        <item name="colorControlNormal">@color/colorAccent</item>
+        <item name="colorControlActivated">@android:color/white</item>
+        <item name="colorControlHighlight">@android:color/white</item>
+        <item name="android:textColorHint">@color/colorAccent</item>
+
+        <item name="colorButtonNormal">@color/colorPrimaryDark</item>
+
+        <item name="android:textColorPrimary">@color/colorAccent</item>
+
+    </style>
+
+    <style name="AppTheme.LoginActivity.ProgressDialog" parent="Theme.AppCompat.Dialog">
+        <item name="android:background">@color/colorPrimary</item>
+        <item name="android:textColorPrimary">@color/colorAccent</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
