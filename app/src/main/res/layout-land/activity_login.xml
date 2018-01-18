@@ -57,6 +57,7 @@
             android:id="@+id/passwordEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:imeOptions="actionDone"
             android:inputType="textPassword" />
 
     </android.support.design.widget.TextInputLayout>
@@ -83,7 +84,7 @@
         android:layout_marginStart="32dp"
         android:layout_marginTop="32dp"
         android:gravity="center"
-        android:text="@string/signupText"
+        android:text="@string/signupLinkText"
         android:textColor="@color/colorAccent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
