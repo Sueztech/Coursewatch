@@ -1,5 +1,6 @@
 package com.sueztech.ktec.coursewatch;
 
+@SuppressWarnings("WeakerAccess")
 class Config {
 
     static final String LOG_TAG = "CW";

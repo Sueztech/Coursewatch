@@ -31,17 +31,23 @@ import butterknife.OnClick;
 
 public class LoginActivity extends AppCompatActivity {
 
+    @SuppressWarnings("WeakerAccess")
     @BindView(R.id.emailEditText)
-    EditText emailEditText;
-    @BindView(R.id.passwordEditText)
-    EditText passwordEditText;
-    @BindView(R.id.loginButton)
-    Button loginButton;
+    protected EditText emailEditText;
 
-    MessageDigest messageDigest;
-    ProgressDialog progressDialog;
-    RequestQueue requestQueue;
-    StringRequest loginRequest;
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.passwordEditText)
+    protected EditText passwordEditText;
+
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.loginButton)
+    protected Button loginButton;
+
+    private MessageDigest messageDigest;
+    private ProgressDialog progressDialog;
+    private RequestQueue requestQueue;
+    private StringRequest loginRequest;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,6 +133,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void onLoginRequestSuccess(String response) {
+        Log.i(Config.LOG_TAG, response);
         progressDialog.dismiss();
         Toast.makeText(LoginActivity.this, "Authentication request successful", Toast.LENGTH_SHORT).show();
     }

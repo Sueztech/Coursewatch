@@ -31,10 +31,13 @@ import butterknife.OnClick;
 
 public class SignupActivity extends AppCompatActivity {
 
+    @SuppressWarnings("WeakerAccess")
     @BindView(R.id.emailEditText)
-    EditText emailEditText;
+    protected EditText emailEditText;
+
+    @SuppressWarnings("WeakerAccess")
     @BindView(R.id.passwordEditText)
-    EditText passwordEditText;
+    protected EditText passwordEditText;
     @BindView(R.id.loginButton)
     Button loginButton;
 
