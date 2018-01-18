@@ -161,12 +161,12 @@ public class LoginActivity extends AppCompatActivity {
     private void onLoginRequestSuccess(String response) {
         Log.i(Config.LOG_TAG, response);
         progressDialog.dismiss();
-        Toast.makeText(LoginActivity.this, "Authentication request successful", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Authentication request successful", Toast.LENGTH_SHORT).show();
     }
 
     private void onLoginRequestFail() {
         progressDialog.dismiss();
-        Toast.makeText(LoginActivity.this, "An error occurred during authentication", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "An error occurred during authentication", Toast.LENGTH_SHORT).show();
     }
 
     @OnClick(R.id.signupTextView)
