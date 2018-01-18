@@ -2,6 +2,7 @@ package com.sueztech.ktec.coursewatch;
 
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -48,6 +49,7 @@ public class LoginActivity extends AppCompatActivity {
     private RequestQueue requestQueue;
     private StringRequest loginRequest;
 
+    private static final int REQUEST_SIGNUP = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +96,30 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    private boolean validate() {
+
+        boolean valid = true;
+
+        String email = emailEditText.getText().toString();
+        String password = passwordEditText.getText().toString();
+
+        if (password.isEmpty()) {
+            passwordEditText.setError("Please enter your password");
+            passwordEditText.requestFocus();
+            valid = false;
+        }
+
+        if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            emailEditText.setError("Please enter a valid email address");
+            emailEditText.requestFocus();
+            valid = false;
+        }
+
+        return valid;
+
+    }
+
+    @SuppressWarnings("WeakerAccess")
     @OnClick(R.id.loginButton)
     protected void doLogin() {
 
@@ -145,28 +171,16 @@ public class LoginActivity extends AppCompatActivity {
 
     @OnClick(R.id.signupTextView)
     protected void doSignup() {
-        Toast.makeText(this, "Signing up...", Toast.LENGTH_SHORT).show();
+        startActivityForResult(new Intent(this, SignupActivity.class), REQUEST_SIGNUP);
     }
 
-    private boolean validate() {
-
-        boolean valid = true;
-
-        String email = emailEditText.getText().toString();
-        String password = passwordEditText.getText().toString();
-
-        if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            emailEditText.setError("Please enter a valid email address");
-            valid = false;
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_SIGNUP) {
+            if (resultCode == RESULT_OK) {
+                this.finish();
+            }
         }
-
-        if (password.isEmpty()) {
-            passwordEditText.setError("Please enter your password");
-            valid = false;
-        }
-
-        return valid;
-
     }
 
 }
