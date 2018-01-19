@@ -9,8 +9,10 @@ import android.util.Patterns;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.inputmethod.EditorInfo;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,10 +24,13 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,6 +63,10 @@ public class SignupActivity extends AppCompatActivity {
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.phoneEditText)
     protected EditText phoneEditText;
+
+    @SuppressWarnings("WeakerAccess")
+    @BindView(R.id.collegeSpinner)
+    protected Spinner collegeSpinner;
 
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.signupButton)
@@ -123,7 +132,30 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     private void finishInit(JSONObject response) {
+
         Log.i(Config.LOG_TAG, response.toString());
+
+        ArrayList<College> collegeArrayList = new ArrayList<>();
+
+        try {
+
+            if (response.getInt("status") != 200) {
+                throw new JSONException("Expected status 200, got status " + response.get("status"));
+            }
+            JSONArray collegeJSONArray = response.getJSONArray("data");
+
+            for (int i = 0; i < collegeJSONArray.length(); i++) {
+                collegeArrayList.add(new College(collegeJSONArray.getJSONObject(i)));
+            }
+
+        } catch (JSONException e) {
+            Log.e(Config.LOG_TAG, e.toString());
+            onInitFail();
+            return;
+        }
+
+        collegeSpinner.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, collegeArrayList));
+
         progressDialog.dismiss();
         progressDialog.setCancelable(true);
         progressDialog.setMessage("Signing up...");
@@ -141,6 +173,7 @@ public class SignupActivity extends AppCompatActivity {
                 signupButton.setEnabled(true);
             }
         });
+
     }
 
     private void onInitFail() {
@@ -173,8 +206,7 @@ public class SignupActivity extends AppCompatActivity {
         try {
             Phonenumber.PhoneNumber phoneNumber = phoneUtil.parse(phone, "US");
             if (!phoneUtil.isValidNumber(phoneNumber)) {
-                phoneEditText.setError("Please enter a valid phone number");
-                valid = false;
+                throw new NumberParseException(NumberParseException.ErrorType.NOT_A_NUMBER, "");
             }
         } catch (NumberParseException e) {
             Log.e(Config.LOG_TAG, e.toString());
@@ -240,6 +272,7 @@ public class SignupActivity extends AppCompatActivity {
                 messageDigest.update(confirmPasswordEditText.getText().toString().getBytes());
                 params.put("passConf", Util.bytesToHex(messageDigest.digest()));
                 params.put("tel", phoneEditText.getText().toString());
+                params.put("college", ((College) collegeSpinner.getSelectedItem()).getId());
                 return params;
             }
 

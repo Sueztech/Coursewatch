@@ -14,7 +14,7 @@
     <string name="confirmPasswordHint">Confirm Password</string>
     <string name="nameHint">Name</string>
     <string name="phoneHint">Phone number</string>
-    <string name="collegeHint">College</string>
+    <string name="collegeHint">College:</string>
 
     <string name="loginText">Login</string>
     <string name="signupLinkText">No account yet? Sign up</string>

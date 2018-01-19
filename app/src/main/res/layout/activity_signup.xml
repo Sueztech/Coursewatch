@@ -74,6 +74,7 @@
         <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:layout_marginTop="@dimen/activity_vertical_margin">
 
             <android.support.design.widget.TextInputEditText
@@ -86,11 +87,21 @@
 
         </android.support.design.widget.TextInputLayout>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:paddingEnd="4dp"
+            android:paddingStart="4dp"
+            android:text="@string/collegeHint"
+            android:textColor="@color/colorAccent"
+            android:textSize="18sp" />
+
         <Spinner
             android:id="@+id/collegeSpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/activity_vertical_margin" />
+            android:layout_marginBottom="@dimen/activity_vertical_margin" />
 
         <Button
             android:id="@+id/signupButton"
