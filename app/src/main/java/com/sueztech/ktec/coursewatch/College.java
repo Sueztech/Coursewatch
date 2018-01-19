@@ -9,7 +9,7 @@ class College {
     private String name;
 
     College(JSONObject jsonObject) throws JSONException {
-        this.id = jsonObject.getString("COLLEGE");
+        this.id = jsonObject.getString("ID");
         this.name = jsonObject.getString("NAME");
     }
 
