@@ -104,13 +104,17 @@ public class LoginActivity extends AppCompatActivity {
         String password = passwordEditText.getText().toString();
 
         if (password.isEmpty()) {
-            passwordEditText.setError("Please enter your password");
+            passwordEditText.setError(getString(R.string.err_400_pass_login));
             passwordEditText.requestFocus();
             valid = false;
         }
 
-        if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            emailEditText.setError("Please enter a valid email address");
+        if (email.isEmpty()) {
+            emailEditText.setError(getString(R.string.err_400_email));
+            emailEditText.requestFocus();
+            valid = false;
+        } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            emailEditText.setError(getString(R.string.err_403_email));
             emailEditText.requestFocus();
             valid = false;
         }

@@ -54,15 +54,15 @@ public class SignupActivity extends AppCompatActivity {
 
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.passwordEditText)
-    protected EditText passwordEditText;
+    protected EditText passEditText;
 
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.confirmPasswordEditText)
-    protected EditText confirmPasswordEditText;
+    protected EditText passConfEditText;
 
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.phoneEditText)
-    protected EditText phoneEditText;
+    protected EditText telEditText;
 
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.collegeSpinner)
@@ -87,17 +87,17 @@ public class SignupActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         phoneUtil = PhoneNumberUtil.createInstance(this);
-        phoneEditText.addTextChangedListener(new PhoneNumberFormattingTextWatcher(phoneUtil));
-        phoneEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                if (i == EditorInfo.IME_ACTION_DONE) {
-                    doSignup();
-                    return true;
-                }
-                return false;
-            }
-        });
+        telEditText.addTextChangedListener(new PhoneNumberFormattingTextWatcher(phoneUtil));
+//        telEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+//            @Override
+//            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+//                if (i == EditorInfo.IME_ACTION_DONE) {
+//                    doSignup();
+//                    return true;
+//                }
+//                return false;
+//            }
+//        });
 
         try {
             messageDigest = MessageDigest.getInstance("SHA-256");
@@ -140,7 +140,7 @@ public class SignupActivity extends AppCompatActivity {
         try {
 
             if (response.getInt("status") != 200) {
-                throw new JSONException("Expected status 200, got status " + response.get("status"));
+                throw new JSONException("Got unexpected status " + response.get("status"));
             }
             JSONArray collegeJSONArray = response.getJSONArray("data");
 
@@ -178,7 +178,7 @@ public class SignupActivity extends AppCompatActivity {
 
     private void onInitFail() {
         progressDialog.dismiss();
-        Toast.makeText(this, "An unexpected error occurred. Please try again.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.unexpected_error, Toast.LENGTH_SHORT).show();
         finish();
     }
 
@@ -199,38 +199,56 @@ public class SignupActivity extends AppCompatActivity {
 
         String name = nameEditText.getText().toString();
         String email = emailEditText.getText().toString();
-        String password = passwordEditText.getText().toString();
-        String confirmPassword = confirmPasswordEditText.getText().toString();
-        String phone = phoneEditText.getText().toString();
+        String pass = passEditText.getText().toString();
+        String passConf = passConfEditText.getText().toString();
+        String tel = telEditText.getText().toString();
 
+        if (tel.isEmpty()) {
+            telEditText.setError(getString(R.string.err_400_tel));
+            telEditText.requestFocus();
+            valid = false;
+        }
         try {
-            Phonenumber.PhoneNumber phoneNumber = phoneUtil.parse(phone, "US");
+            Phonenumber.PhoneNumber phoneNumber = phoneUtil.parse(tel, "US");
             if (!phoneUtil.isValidNumber(phoneNumber)) {
                 throw new NumberParseException(NumberParseException.ErrorType.NOT_A_NUMBER, "");
             }
         } catch (NumberParseException e) {
             Log.e(Config.LOG_TAG, e.toString());
-            phoneEditText.setError("Please enter a valid phone number");
+            telEditText.setError(getString(R.string.err_403_tel));
+            telEditText.requestFocus();
             valid = false;
         }
 
-        if (!confirmPassword.equals(password)) {
-            confirmPasswordEditText.setError("Passwords do not match!");
+        if (passConf.isEmpty()) {
+            passConfEditText.setError(getString(R.string.err_400_passConf));
+            passConfEditText.requestFocus();
+            valid = false;
+        } else if (!passConf.equals(pass)) {
+            passConfEditText.setError(getString(R.string.err_403_passConf));
+            passConfEditText.requestFocus();
             valid = false;
         }
 
-        if (password.isEmpty()) {
-            passwordEditText.setError("Please enter a password");
+        if (pass.isEmpty()) {
+            passEditText.setError(getString(R.string.err_400_pass_signup));
+            passEditText.requestFocus();
             valid = false;
         }
 
-        if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            emailEditText.setError("Please enter a valid email address");
+        if (email.isEmpty()) {
+            emailEditText.setError(getString(R.string.err_400_email));
+            emailEditText.requestFocus();
+            valid = false;
+        } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            emailEditText.setError(getString(R.string.err_403_email));
+            emailEditText.requestFocus();
             valid = false;
         }
 
         if (name.isEmpty()) {
-            nameEditText.setError("Please enter your name");
+            nameEditText.setError(getString(R.string.err_400_email));
+            nameEditText.requestFocus();
             valid = false;
         }
 
@@ -267,11 +285,11 @@ public class SignupActivity extends AppCompatActivity {
                 Map<String, String> params = new HashMap<>();
                 params.put("name", nameEditText.getText().toString());
                 params.put("email", emailEditText.getText().toString());
-                messageDigest.update(passwordEditText.getText().toString().getBytes());
+                messageDigest.update(passEditText.getText().toString().getBytes());
                 params.put("pass", Util.bytesToHex(messageDigest.digest()));
-                messageDigest.update(confirmPasswordEditText.getText().toString().getBytes());
+                messageDigest.update(passConfEditText.getText().toString().getBytes());
                 params.put("passConf", Util.bytesToHex(messageDigest.digest()));
-                params.put("tel", phoneEditText.getText().toString());
+                params.put("tel", telEditText.getText().toString());
                 params.put("college", ((College) collegeSpinner.getSelectedItem()).getId());
                 return params;
             }
@@ -283,9 +301,46 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     private void onSignupRequestSuccess(String response) {
+
         Log.i(Config.LOG_TAG, response);
+
+        try {
+
+            JSONObject responseJson = new JSONObject(response);
+            int status = responseJson.getInt("status");
+
+            if (status == 200) {
+                // TODO: Signup successful
+                Toast.makeText(this, R.string.signup_successful, Toast.LENGTH_LONG).show();
+                finish();
+            } else if (status == 406) {
+                JSONArray fields = responseJson.getJSONArray("data");
+                for (int i = 0; i < fields.length(); i++) {
+                    switch (fields.getString(i)) {
+                        case "email":
+                            emailEditText.setError(getString(R.string.err_406_email));
+                            emailEditText.requestFocus();
+                            break;
+                        default:
+                            Log.e(Config.LOG_TAG, "Got unknown field " + fields.getString(i) + " in 406 response");
+                            break;
+                    }
+                }
+            } else if (status == 500) {
+                // Exception occurred on the server
+                throw new JSONException("Server error: " + responseJson.get("data"));
+            } else {
+                throw new JSONException("Got unexpected status " + status);
+            }
+
+        } catch (JSONException e) {
+            Log.e(Config.LOG_TAG, e.toString());
+            onSignupRequestFail();
+            return;
+        }
+
         progressDialog.dismiss();
-        Toast.makeText(this, "Signup request successful", Toast.LENGTH_SHORT).show();
+
     }
 
     private void onSignupRequestFail() {

@@ -9,15 +9,35 @@
     <string name="logoContentDesc">Logo</string>
 
     <string name="emailHint">Email</string>
-    <string name="passwordHint">Password</string>
+    <string name="passHint">Password</string>
 
-    <string name="confirmPasswordHint">Confirm Password</string>
+    <string name="passConfHint">Confirm Password</string>
     <string name="nameHint">Name</string>
-    <string name="phoneHint">Phone number</string>
+    <string name="telHint">Phone number</string>
     <string name="collegeHint">College:</string>
 
-    <string name="loginText">Login</string>
+    <string name="loginButtonText">Login</string>
     <string name="signupLinkText">No account yet? Sign up</string>
-    <string name="signupText">Sign up</string>
+    <string name="signupButtonText">Sign up</string>
+
+    <string name="err_40x_name">Please enter your name</string>
+    <string name="err_40x_college">Please select a college</string>
+
+    <string name="err_400_tel">Please enter your phone number</string>
+    <string name="err_400_email">Please enter your email address</string>
+    <string name="err_400_pass_signup">Please enter a password</string>
+    <string name="err_400_pass_login">Please enter your password</string>
+    <string name="err_400_passConf">Please confirm your password</string>
+
+    <string name="err_403_tel">Please enter a valid phone number</string>
+    <string name="err_403_email">Please enter a valid email address</string>
+    <string name="err_403_passConf">Passwords do not match</string>
+
+    <string name="err_406_email">This email is already in use</string>
+
+    <string name="signup_successful">Signup successful. Please check your inbox for a verification email.</string>
+    <string name="signup_error">An unexpected error occurred during signup. Please try again.</string>
+
+    <string name="unexpected_error">An unexpected error occurred. Please try again.</string>
 
 </resources>
