@@ -310,8 +310,9 @@ public class SignupActivity extends AppCompatActivity {
             int status = responseJson.getInt("status");
 
             if (status == 200) {
-                // TODO: Signup successful
+                // TODO: show email verification screen
                 Toast.makeText(this, R.string.signup_successful, Toast.LENGTH_LONG).show();
+                setResult(RESULT_OK);
                 finish();
             } else if (status == 406) {
                 JSONArray fields = responseJson.getJSONArray("data");

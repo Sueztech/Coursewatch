@@ -53,8 +53,6 @@ public class LoginActivity extends AppCompatActivity {
     private RequestQueue requestQueue;
     private StringRequest loginRequest;
 
-    private static final int REQUEST_SIGNUP = 1;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -174,7 +172,8 @@ public class LoginActivity extends AppCompatActivity {
             int status = responseJson.getInt("status");
 
             if (status == 200) {
-                // TODO: Login successful
+                // TODO: return session ID
+                setResult(RESULT_OK);
                 finish();
             } else if (status == 401) {
                 JSONArray fields = responseJson.getJSONArray("data");
@@ -218,16 +217,7 @@ public class LoginActivity extends AppCompatActivity {
 
     @OnClick(R.id.signupTextView)
     protected void doSignup() {
-        startActivityForResult(new Intent(this, SignupActivity.class), REQUEST_SIGNUP);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_SIGNUP) {
-            if (resultCode == RESULT_OK) {
-                this.finish();
-            }
-        }
+        startActivity(new Intent(this, SignupActivity.class));
     }
 
 }

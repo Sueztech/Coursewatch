@@ -16,9 +16,10 @@
     <string name="telHint">Phone number</string>
     <string name="collegeHint">College:</string>
 
-    <string name="loginButtonText">Login</string>
+    <string name="loginActionText">Login</string>
     <string name="signupLinkText">No account yet? Sign up</string>
-    <string name="signupButtonText">Sign up</string>
+    <string name="signupActionText">Sign up</string>
+    <string name="logoutActionText">Logout</string>
 
     <string name="err_40x_name">Please enter your name</string>
     <string name="err_40x_college">Please select a college</string>
