@@ -29,14 +29,19 @@
     <string name="err_400_pass_login">Please enter your password</string>
     <string name="err_400_passConf">Please confirm your password</string>
 
+    <string name="err_401_email_pass">Email/password is incorrect</string>
+    <string name="err_401_time">Account is temporarily locked out</string>
+
     <string name="err_403_tel">Please enter a valid phone number</string>
     <string name="err_403_email">Please enter a valid email address</string>
     <string name="err_403_passConf">Passwords do not match</string>
 
     <string name="err_406_email">This email is already in use</string>
 
+    <string name="login_error">An unexpected error occurred during authentication.</string>
+
     <string name="signup_successful">Signup successful. Please check your inbox for a verification email.</string>
-    <string name="signup_error">An unexpected error occurred during signup. Please try again.</string>
+    <string name="signup_error">An unexpected error occurred during signup.</string>
 
     <string name="unexpected_error">An unexpected error occurred. Please try again.</string>
 

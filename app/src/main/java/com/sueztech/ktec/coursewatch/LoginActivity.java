@@ -21,6 +21,10 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -38,7 +42,7 @@ public class LoginActivity extends AppCompatActivity {
 
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.passwordEditText)
-    protected EditText passwordEditText;
+    protected EditText passEditText;
 
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.loginButton)
@@ -66,7 +70,7 @@ public class LoginActivity extends AppCompatActivity {
 
         requestQueue = Volley.newRequestQueue(this);
 
-        passwordEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        passEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 if (i == EditorInfo.IME_ACTION_DONE) {
@@ -101,11 +105,11 @@ public class LoginActivity extends AppCompatActivity {
         boolean valid = true;
 
         String email = emailEditText.getText().toString();
-        String password = passwordEditText.getText().toString();
+        String password = passEditText.getText().toString();
 
         if (password.isEmpty()) {
-            passwordEditText.setError(getString(R.string.err_400_pass_login));
-            passwordEditText.requestFocus();
+            passEditText.setError(getString(R.string.err_400_pass_login));
+            passEditText.requestFocus();
             valid = false;
         }
 
@@ -149,7 +153,7 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             protected Map<String, String> getParams() {
-                messageDigest.update(passwordEditText.getText().toString().getBytes());
+                messageDigest.update(passEditText.getText().toString().getBytes());
                 Map<String, String> params = new HashMap<>();
                 params.put("email", emailEditText.getText().toString());
                 params.put("pass", Util.bytesToHex(messageDigest.digest()));
@@ -164,13 +168,52 @@ public class LoginActivity extends AppCompatActivity {
 
     private void onLoginRequestSuccess(String response) {
         Log.i(Config.LOG_TAG, response);
+        try {
+
+            JSONObject responseJson = new JSONObject(response);
+            int status = responseJson.getInt("status");
+
+            if (status == 200) {
+                // TODO: Login successful
+                finish();
+            } else if (status == 401) {
+                JSONArray fields = responseJson.getJSONArray("data");
+                for (int i = 0; i < fields.length(); i++) {
+                    switch (fields.getString(i)) {
+                        case "email":
+                        case "pass":
+                            passEditText.setError(getString(R.string.err_401_email_pass));
+                            passEditText.requestFocus();
+                            break;
+                        case "time":
+                            passEditText.setError(getString(R.string.err_401_time));
+                            passEditText.requestFocus();
+                            break;
+                        default:
+                            Log.e(Config.LOG_TAG, "Got unknown field " + fields.getString(i) + " in 401 response");
+                            break;
+                    }
+                }
+            } else if (status == 500) {
+                // Exception occurred on the server
+                throw new JSONException("Server error: " + responseJson.get("data"));
+            } else {
+                throw new JSONException("Got unexpected status " + status);
+            }
+
+        } catch (JSONException e) {
+            Log.e(Config.LOG_TAG, e.toString());
+            onLoginRequestFail();
+            return;
+        }
+
         progressDialog.dismiss();
-        Toast.makeText(this, "Authentication request successful", Toast.LENGTH_SHORT).show();
+
     }
 
     private void onLoginRequestFail() {
         progressDialog.dismiss();
-        Toast.makeText(this, "An error occurred during authentication", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.login_error, Toast.LENGTH_SHORT).show();
     }
 
     @OnClick(R.id.signupTextView)
