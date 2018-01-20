@@ -6,14 +6,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Patterns;
-import android.view.KeyEvent;
 import android.view.MenuItem;
-import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -247,7 +244,7 @@ public class SignupActivity extends AppCompatActivity {
         }
 
         if (name.isEmpty()) {
-            nameEditText.setError(getString(R.string.err_400_email));
+            nameEditText.setError(getString(R.string.err_40x_name));
             nameEditText.requestFocus();
             valid = false;
         }
@@ -346,7 +343,7 @@ public class SignupActivity extends AppCompatActivity {
 
     private void onSignupRequestFail() {
         progressDialog.dismiss();
-        Toast.makeText(this, "An error occurred during signup", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.signup_error, Toast.LENGTH_SHORT).show();
     }
 
 }

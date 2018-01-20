@@ -22,7 +22,6 @@
     <string name="logoutActionText">Logout</string>
 
     <string name="err_40x_name">Please enter your name</string>
-    <string name="err_40x_college">Please select a college</string>
 
     <string name="err_400_tel">Please enter your phone number</string>
     <string name="err_400_email">Please enter your email address</string>
