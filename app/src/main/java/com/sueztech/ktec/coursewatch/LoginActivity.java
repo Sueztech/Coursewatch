@@ -195,15 +195,14 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             JSONObject responseJson = new JSONObject(response);
             int status = responseJson.getInt("status");
 
+            String username = emailEditText.getText().toString();
+            String password = passEditText.getText().toString();
+            Credential credential = new Credential.Builder(username)
+                    .setPassword(password)
+                    .build();
+
             if (status == 200) {
-
-                String username = emailEditText.getText().toString();
-                String password = passEditText.getText().toString();
-                Credential credential = new Credential.Builder(username)
-                        .setPassword(password)
-                        .build();
                 saveCredential(credential);
-
             } else if (status == 401) {
                 JSONArray fields = responseJson.getJSONArray("data");
                 for (int i = 0; i < fields.length(); i++) {
@@ -212,6 +211,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                         case "pass":
                             passEditText.setError(getString(R.string.err_401_email_pass));
                             passEditText.requestFocus();
+                            deleteCredential(credential);
+                            requestCredentials();
                             break;
                         case "time":
                             passEditText.setError(getString(R.string.err_401_time));
@@ -253,6 +254,22 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                             status.getStatusMessage() + " " +
                             status.getStatusCode());
                     resolveResult(status, RC_SAVE);
+                }
+            }
+        });
+    }
+
+    private void deleteCredential(Credential credential) {
+        Auth.CredentialsApi.delete(mGoogleApiClient,
+                credential).setResultCallback(new ResultCallback<Status>() {
+            @Override
+            public void onResult(@NonNull Status status) {
+                if (status.isSuccess()) {
+                    Log.d(TAG, "Credential successfully deleted.");
+                } else {
+                    // This may be due to the credential not existing, possibly
+                    // already deleted via another device/app.
+                    Log.d(TAG, "Credential not deleted successfully.");
                 }
             }
         });
