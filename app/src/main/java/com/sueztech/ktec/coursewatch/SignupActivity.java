@@ -99,7 +99,7 @@ public class SignupActivity extends AppCompatActivity {
         try {
             messageDigest = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
-            Log.wtf(Config.LOG_TAG, e.toString());
+            Log.wtf(Config.TAG, e.toString());
         }
 
         requestQueue = Volley.newRequestQueue(this);
@@ -119,7 +119,7 @@ public class SignupActivity extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(Config.LOG_TAG, error.toString());
+                Log.e(Config.TAG, error.toString());
                 onInitFail();
             }
         });
@@ -130,7 +130,7 @@ public class SignupActivity extends AppCompatActivity {
 
     private void finishInit(JSONObject response) {
 
-        Log.i(Config.LOG_TAG, response.toString());
+        Log.i(Config.TAG, response.toString());
 
         ArrayList<College> collegeArrayList = new ArrayList<>();
 
@@ -146,7 +146,7 @@ public class SignupActivity extends AppCompatActivity {
             }
 
         } catch (JSONException e) {
-            Log.e(Config.LOG_TAG, e.toString());
+            Log.e(Config.TAG, e.toString());
             onInitFail();
             return;
         }
@@ -211,7 +211,7 @@ public class SignupActivity extends AppCompatActivity {
                 throw new NumberParseException(NumberParseException.ErrorType.NOT_A_NUMBER, "");
             }
         } catch (NumberParseException e) {
-            Log.e(Config.LOG_TAG, e.toString());
+            Log.e(Config.TAG, e.toString());
             telEditText.setError(getString(R.string.err_403_tel));
             telEditText.requestFocus();
             valid = false;
@@ -272,7 +272,7 @@ public class SignupActivity extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(Config.LOG_TAG, error.toString());
+                Log.e(Config.TAG, error.toString());
                 onSignupRequestFail();
             }
         }) {
@@ -299,7 +299,7 @@ public class SignupActivity extends AppCompatActivity {
 
     private void onSignupRequestSuccess(String response) {
 
-        Log.i(Config.LOG_TAG, response);
+        Log.i(Config.TAG, response);
 
         try {
 
@@ -320,7 +320,7 @@ public class SignupActivity extends AppCompatActivity {
                             emailEditText.requestFocus();
                             break;
                         default:
-                            Log.e(Config.LOG_TAG, "Got unknown field " + fields.getString(i) + " in 406 response");
+                            Log.e(Config.TAG, "Got unknown field " + fields.getString(i) + " in 406 response");
                             break;
                     }
                 }
@@ -332,7 +332,7 @@ public class SignupActivity extends AppCompatActivity {
             }
 
         } catch (JSONException e) {
-            Log.e(Config.LOG_TAG, e.toString());
+            Log.e(Config.TAG, e.toString());
             onSignupRequestFail();
             return;
         }
