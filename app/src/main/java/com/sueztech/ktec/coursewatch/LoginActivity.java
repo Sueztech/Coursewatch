@@ -4,9 +4,9 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.KeyEvent;
@@ -45,45 +45,33 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class LoginActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
-
-    @SuppressWarnings("WeakerAccess")
-    @BindView(R.id.emailEditText)
-    protected EditText emailEditText;
-
-    @SuppressWarnings("WeakerAccess")
-    @BindView(R.id.passwordEditText)
-    protected EditText passEditText;
-
-    @SuppressWarnings("WeakerAccess")
-    @BindView(R.id.loginButton)
-    protected Button loginButton;
-
-    private MessageDigest messageDigest;
-    private ProgressDialog progressDialog;
-    private RequestQueue requestQueue;
-    private StringRequest loginRequest;
-
-    private GoogleApiClient mGoogleApiClient;
-    private boolean mIsResolving;
+public class LoginActivity extends AppCompatActivity
+        implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = "LoginActivity";
     private static final int RC_READ = 1;
     private static final int RC_SAVE = 2;
+    @SuppressWarnings("WeakerAccess") @BindView(R.id.emailEditText) protected EditText
+            emailEditText;
+    @SuppressWarnings("WeakerAccess") @BindView(R.id.passwordEditText) protected EditText
+            passEditText;
+    @SuppressWarnings("WeakerAccess") @BindView(R.id.loginButton) protected Button loginButton;
+    private MessageDigest messageDigest;
+    private ProgressDialog progressDialog;
+    private RequestQueue requestQueue;
+    private StringRequest loginRequest;
+    private GoogleApiClient mGoogleApiClient;
+    private boolean mIsResolving;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    @Override protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate: " + savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
 
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .enableAutoManage(this, 0, this)
-                .addApi(Auth.CREDENTIALS_API)
-                .build();
+        mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this)
+                .enableAutoManage(this, 0, this).addApi(Auth.CREDENTIALS_API).build();
 
         try {
             messageDigest = MessageDigest.getInstance("SHA-256");
@@ -94,8 +82,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         requestQueue = Volley.newRequestQueue(this);
 
         passEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+            @Override public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 if (i == EditorInfo.IME_ACTION_DONE) {
                     doLogin();
                     return true;
@@ -107,30 +94,26 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         progressDialog = new ProgressDialog(this, R.style.AppTheme_LoginActivity_ProgressDialog);
         progressDialog.setMessage("Logging you in...");
         progressDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(DialogInterface dialog) {
+            @Override public void onShow(DialogInterface dialog) {
                 loginButton.setEnabled(false);
             }
         });
         progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialogInterface) {
+            @Override public void onCancel(DialogInterface dialogInterface) {
                 if (loginRequest != null) {
                     loginRequest.cancel();
                 }
             }
         });
         progressDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialogInterface) {
+            @Override public void onDismiss(DialogInterface dialogInterface) {
                 loginButton.setEnabled(true);
             }
         });
 
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "onActivityResult: " + requestCode + ", " + resultCode + ", " + data);
@@ -177,9 +160,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
     }
 
-    @SuppressWarnings("WeakerAccess")
-    @OnClick(R.id.loginButton)
-    protected void doLogin() {
+    @SuppressWarnings("WeakerAccess") @OnClick(R.id.loginButton) protected void doLogin() {
 
         Log.d(TAG, "doLogin()");
 
@@ -189,20 +170,18 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
         progressDialog.show();
 
-        loginRequest = new StringRequest(Request.Method.POST, Config.SSO_LOGIN_URL, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                onLoginRequestSuccess(response);
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
+        loginRequest = new StringRequest(Request.Method.POST, Config.SSO_LOGIN_URL,
+                new Response.Listener<String>() {
+                    @Override public void onResponse(String response) {
+                        onLoginRequestSuccess(response);
+                    }
+                }, new Response.ErrorListener() {
+            @Override public void onErrorResponse(VolleyError error) {
                 Log.e(TAG, error.toString());
                 onLoginRequestFail();
             }
         }) {
-            @Override
-            protected Map<String, String> getParams() {
+            @Override protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
                 params.put("email", emailEditText.getText().toString());
                 messageDigest.update(passEditText.getText().toString().getBytes());
@@ -215,8 +194,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
     }
 
-    @OnClick(R.id.signupTextView)
-    protected void doSignup() {
+    @OnClick(R.id.signupTextView) protected void doSignup() {
         Log.d(TAG, "doSignup()");
         startActivity(new Intent(this, SignupActivity.class));
     }
@@ -250,7 +228,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                             passEditText.requestFocus();
                             break;
                         default:
-                            Log.e(TAG, "Got unknown field " + fields.getString(i) + " in 401 response");
+                            Log.e(TAG, "Got unknown field " + fields.getString(i)
+                                    + " in 401 response");
                             break;
                     }
                 }
@@ -280,16 +259,18 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
         Log.d(TAG, "requestCredentials()");
 
-        CredentialRequest request = new CredentialRequest.Builder().setPasswordLoginSupported(true).build();
+        CredentialRequest request = new CredentialRequest.Builder().setPasswordLoginSupported(true)
+                .build();
 
-        Auth.CredentialsApi.request(mGoogleApiClient, request).setResultCallback(
-                new ResultCallback<CredentialRequestResult>() {
+        Auth.CredentialsApi.request(mGoogleApiClient, request)
+                .setResultCallback(new ResultCallback<CredentialRequestResult>() {
                     @Override
                     public void onResult(@NonNull CredentialRequestResult credentialRequestResult) {
                         Status status = credentialRequestResult.getStatus();
                         if (credentialRequestResult.getStatus().isSuccess()) {
                             processRetrievedCredential(credentialRequestResult.getCredential());
-                        } else if (status.getStatusCode() == CommonStatusCodes.RESOLUTION_REQUIRED) {
+                        } else if (status.getStatusCode()
+                                == CommonStatusCodes.RESOLUTION_REQUIRED) {
                             resolveResult(status, RC_READ);
                         } else if (status.getStatusCode() == CommonStatusCodes.SIGN_IN_REQUIRED) {
                             Log.d(TAG, "Sign in required");
@@ -297,8 +278,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                             Log.w(TAG, "Unrecognized status code: " + status.getStatusCode());
                         }
                     }
-                }
-        );
+                });
 
     }
 
@@ -334,17 +314,18 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
     private void saveCredential(Credential credential) {
         Log.d(TAG, "saveCredential: " + credential);
-        Auth.CredentialsApi.save(mGoogleApiClient, credential).setResultCallback(new ResultCallback<Status>() {
-            @Override
-            public void onResult(@NonNull Status status) {
-                if (status.isSuccess()) {
-                    goToContent();
-                } else {
-                    Log.d(TAG, "Could not save credential: " + status.getStatusCode() + " " + status.getStatusMessage());
-                    resolveResult(status, RC_SAVE);
-                }
-            }
-        });
+        Auth.CredentialsApi.save(mGoogleApiClient, credential)
+                .setResultCallback(new ResultCallback<Status>() {
+                    @Override public void onResult(@NonNull Status status) {
+                        if (status.isSuccess()) {
+                            goToContent();
+                        } else {
+                            Log.d(TAG, "Could not save credential: " + status.getStatusCode() + " "
+                                    + status.getStatusMessage());
+                            resolveResult(status, RC_SAVE);
+                        }
+                    }
+                });
     }
 
     private void deleteCredential(Credential credential) {
@@ -359,19 +340,16 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         finish();
     }
 
-    @Override
-    public void onConnected(Bundle bundle) {
+    @Override public void onConnected(Bundle bundle) {
         Log.d(TAG, "onConnected");
         requestCredentials();
     }
 
-    @Override
-    public void onConnectionSuspended(int cause) {
+    @Override public void onConnectionSuspended(int cause) {
         Log.d(TAG, "onConnectionSuspended: " + cause);
     }
 
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+    @Override public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d(TAG, "onConnectionFailed: " + connectionResult);
     }
 

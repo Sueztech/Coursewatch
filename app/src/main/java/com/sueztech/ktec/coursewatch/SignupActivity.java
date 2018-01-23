@@ -2,8 +2,8 @@ package com.sueztech.ktec.coursewatch;
 
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.MenuItem;
@@ -34,72 +34,56 @@ import java.util.Map;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-
 import io.michaelrocks.libphonenumber.android.NumberParseException;
 import io.michaelrocks.libphonenumber.android.PhoneNumberUtil;
 import io.michaelrocks.libphonenumber.android.Phonenumber;
 
 public class SignupActivity extends AppCompatActivity {
 
-    @SuppressWarnings("WeakerAccess")
-    @BindView(R.id.nameEditText)
-    protected EditText nameEditText;
-
-    @SuppressWarnings("WeakerAccess")
-    @BindView(R.id.emailEditText)
-    protected EditText emailEditText;
-
-    @SuppressWarnings("WeakerAccess")
-    @BindView(R.id.passwordEditText)
-    protected EditText passEditText;
-
-    @SuppressWarnings("WeakerAccess")
-    @BindView(R.id.confirmPasswordEditText)
-    protected EditText passConfEditText;
-
-    @SuppressWarnings("WeakerAccess")
-    @BindView(R.id.phoneEditText)
-    protected EditText telEditText;
-
-    @SuppressWarnings("WeakerAccess")
-    @BindView(R.id.collegeSpinner)
-    protected Spinner collegeSpinner;
-
-    @SuppressWarnings("WeakerAccess")
-    @BindView(R.id.signupButton)
-    protected Button signupButton;
-
+    private static final String TAG = "SignupActivity";
+    @SuppressWarnings("WeakerAccess") @BindView(R.id.nameEditText) protected EditText nameEditText;
+    @SuppressWarnings("WeakerAccess") @BindView(R.id.emailEditText) protected EditText
+            emailEditText;
+    @SuppressWarnings("WeakerAccess") @BindView(R.id.passwordEditText) protected EditText
+            passEditText;
+    @SuppressWarnings("WeakerAccess") @BindView(R.id.confirmPasswordEditText) protected EditText
+            passConfEditText;
+    @SuppressWarnings("WeakerAccess") @BindView(R.id.phoneEditText) protected EditText telEditText;
+    @SuppressWarnings("WeakerAccess") @BindView(R.id.collegeSpinner) protected Spinner
+            collegeSpinner;
+    @SuppressWarnings("WeakerAccess") @BindView(R.id.signupButton) protected Button signupButton;
     private MessageDigest messageDigest;
     private PhoneNumberUtil phoneUtil;
     private ProgressDialog progressDialog;
     private RequestQueue requestQueue;
     private StringRequest signupRequest;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    @Override protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
-        if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
         ButterKnife.bind(this);
 
         phoneUtil = PhoneNumberUtil.createInstance(this);
         telEditText.addTextChangedListener(new PhoneNumberFormattingTextWatcher(phoneUtil));
-//        telEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-//            @Override
-//            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-//                if (i == EditorInfo.IME_ACTION_DONE) {
-//                    doSignup();
-//                    return true;
-//                }
-//                return false;
-//            }
-//        });
+        //        telEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        //            @Override
+        //            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+        //                if (i == EditorInfo.IME_ACTION_DONE) {
+        //                    doSignup();
+        //                    return true;
+        //                }
+        //                return false;
+        //            }
+        //        });
 
         try {
             messageDigest = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
-            Log.wtf(Config.TAG, e.toString());
+            Log.wtf(TAG, e.toString());
         }
 
         requestQueue = Volley.newRequestQueue(this);
@@ -111,15 +95,14 @@ public class SignupActivity extends AppCompatActivity {
 
         progressDialog.show();
 
-        JsonObjectRequest collegesRequest = new JsonObjectRequest(Config.SSO_COLLEGES_URL, null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                finishInit(response);
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e(Config.TAG, error.toString());
+        JsonObjectRequest collegesRequest = new JsonObjectRequest(Config.SSO_COLLEGES_URL, null,
+                new Response.Listener<JSONObject>() {
+                    @Override public void onResponse(JSONObject response) {
+                        finishInit(response);
+                    }
+                }, new Response.ErrorListener() {
+            @Override public void onErrorResponse(VolleyError error) {
+                Log.e(TAG, error.toString());
                 onInitFail();
             }
         });
@@ -130,7 +113,7 @@ public class SignupActivity extends AppCompatActivity {
 
     private void finishInit(JSONObject response) {
 
-        Log.i(Config.TAG, response.toString());
+        Log.i(TAG, response.toString());
 
         ArrayList<College> collegeArrayList = new ArrayList<>();
 
@@ -146,27 +129,27 @@ public class SignupActivity extends AppCompatActivity {
             }
 
         } catch (JSONException e) {
-            Log.e(Config.TAG, e.toString());
+            Log.e(TAG, e.toString());
             onInitFail();
             return;
         }
 
-        collegeSpinner.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, collegeArrayList));
+        collegeSpinner.setAdapter(
+                new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,
+                        collegeArrayList));
 
         progressDialog.dismiss();
         progressDialog.setCancelable(true);
         progressDialog.setMessage("Signing up...");
         progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialogInterface) {
+            @Override public void onCancel(DialogInterface dialogInterface) {
                 if (signupRequest != null) {
                     signupRequest.cancel();
                 }
             }
         });
         progressDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialogInterface) {
+            @Override public void onDismiss(DialogInterface dialogInterface) {
                 signupButton.setEnabled(true);
             }
         });
@@ -179,8 +162,7 @@ public class SignupActivity extends AppCompatActivity {
         finish();
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    @Override public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 setResult(RESULT_CANCELED, null);
@@ -211,7 +193,7 @@ public class SignupActivity extends AppCompatActivity {
                 throw new NumberParseException(NumberParseException.ErrorType.NOT_A_NUMBER, "");
             }
         } catch (NumberParseException e) {
-            Log.e(Config.TAG, e.toString());
+            Log.e(TAG, e.toString());
             telEditText.setError(getString(R.string.err_403_tel));
             telEditText.requestFocus();
             valid = false;
@@ -253,9 +235,7 @@ public class SignupActivity extends AppCompatActivity {
 
     }
 
-    @SuppressWarnings("WeakerAccess")
-    @OnClick(R.id.signupButton)
-    protected void doSignup() {
+    @SuppressWarnings("WeakerAccess") @OnClick(R.id.signupButton) protected void doSignup() {
 
         if (!validate()) {
             return;
@@ -264,21 +244,19 @@ public class SignupActivity extends AppCompatActivity {
         signupButton.setEnabled(false);
         progressDialog.show();
 
-        signupRequest = new StringRequest(Request.Method.POST, Config.SSO_SIGNUP_URL, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                onSignupRequestSuccess(response);
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e(Config.TAG, error.toString());
+        signupRequest = new StringRequest(Request.Method.POST, Config.SSO_SIGNUP_URL,
+                new Response.Listener<String>() {
+                    @Override public void onResponse(String response) {
+                        onSignupRequestSuccess(response);
+                    }
+                }, new Response.ErrorListener() {
+            @Override public void onErrorResponse(VolleyError error) {
+                Log.e(TAG, error.toString());
                 onSignupRequestFail();
             }
         }) {
 
-            @Override
-            protected Map<String, String> getParams() {
+            @Override protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
                 params.put("name", nameEditText.getText().toString());
                 params.put("email", emailEditText.getText().toString());
@@ -299,7 +277,7 @@ public class SignupActivity extends AppCompatActivity {
 
     private void onSignupRequestSuccess(String response) {
 
-        Log.i(Config.TAG, response);
+        Log.i(TAG, response);
 
         try {
 
@@ -320,7 +298,8 @@ public class SignupActivity extends AppCompatActivity {
                             emailEditText.requestFocus();
                             break;
                         default:
-                            Log.e(Config.TAG, "Got unknown field " + fields.getString(i) + " in 406 response");
+                            Log.e(TAG, "Got unknown field " + fields.getString(i)
+                                    + " in 406 response");
                             break;
                     }
                 }
@@ -332,7 +311,7 @@ public class SignupActivity extends AppCompatActivity {
             }
 
         } catch (JSONException e) {
-            Log.e(Config.TAG, e.toString());
+            Log.e(TAG, e.toString());
             onSignupRequestFail();
             return;
         }
