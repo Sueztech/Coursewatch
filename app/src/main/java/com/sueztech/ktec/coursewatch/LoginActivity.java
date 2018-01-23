@@ -45,25 +45,31 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+@SuppressWarnings("WeakerAccess")
 public class LoginActivity extends AppCompatActivity
         implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = "LoginActivity";
     private static final int RC_READ = 1;
     private static final int RC_SAVE = 2;
-    @SuppressWarnings("WeakerAccess") @BindView(R.id.emailEditText) protected EditText
-            emailEditText;
-    @SuppressWarnings("WeakerAccess") @BindView(R.id.passwordEditText) protected EditText
-            passEditText;
-    @SuppressWarnings("WeakerAccess") @BindView(R.id.loginButton) protected Button loginButton;
+
+    @BindView(R.id.emailEditText)
+    protected EditText emailEditText;
+    @BindView(R.id.passwordEditText)
+    protected EditText passEditText;
+    @BindView(R.id.loginButton)
+    protected Button loginButton;
+
     private MessageDigest messageDigest;
     private ProgressDialog progressDialog;
     private RequestQueue requestQueue;
     private StringRequest loginRequest;
+
     private GoogleApiClient mGoogleApiClient;
     private boolean mIsResolving;
 
-    @Override protected void onCreate(Bundle savedInstanceState) {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate: " + savedInstanceState);
@@ -82,7 +88,8 @@ public class LoginActivity extends AppCompatActivity
         requestQueue = Volley.newRequestQueue(this);
 
         passEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 if (i == EditorInfo.IME_ACTION_DONE) {
                     doLogin();
                     return true;
@@ -94,26 +101,30 @@ public class LoginActivity extends AppCompatActivity
         progressDialog = new ProgressDialog(this, R.style.AppTheme_LoginActivity_ProgressDialog);
         progressDialog.setMessage("Logging you in...");
         progressDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override public void onShow(DialogInterface dialog) {
+            @Override
+            public void onShow(DialogInterface dialog) {
                 loginButton.setEnabled(false);
             }
         });
         progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override public void onCancel(DialogInterface dialogInterface) {
+            @Override
+            public void onCancel(DialogInterface dialogInterface) {
                 if (loginRequest != null) {
                     loginRequest.cancel();
                 }
             }
         });
         progressDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override public void onDismiss(DialogInterface dialogInterface) {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
                 loginButton.setEnabled(true);
             }
         });
 
     }
 
-    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "onActivityResult: " + requestCode + ", " + resultCode + ", " + data);
@@ -160,7 +171,8 @@ public class LoginActivity extends AppCompatActivity
 
     }
 
-    @SuppressWarnings("WeakerAccess") @OnClick(R.id.loginButton) protected void doLogin() {
+    @OnClick(R.id.loginButton)
+    protected void doLogin() {
 
         Log.d(TAG, "doLogin()");
 
@@ -172,16 +184,19 @@ public class LoginActivity extends AppCompatActivity
 
         loginRequest = new StringRequest(Request.Method.POST, Config.SSO_LOGIN_URL,
                 new Response.Listener<String>() {
-                    @Override public void onResponse(String response) {
+                    @Override
+                    public void onResponse(String response) {
                         onLoginRequestSuccess(response);
                     }
                 }, new Response.ErrorListener() {
-            @Override public void onErrorResponse(VolleyError error) {
+            @Override
+            public void onErrorResponse(VolleyError error) {
                 Log.e(TAG, error.toString());
                 onLoginRequestFail();
             }
         }) {
-            @Override protected Map<String, String> getParams() {
+            @Override
+            protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
                 params.put("email", emailEditText.getText().toString());
                 messageDigest.update(passEditText.getText().toString().getBytes());
@@ -194,7 +209,8 @@ public class LoginActivity extends AppCompatActivity
 
     }
 
-    @OnClick(R.id.signupTextView) protected void doSignup() {
+    @OnClick(R.id.signupTextView)
+    protected void doSignup() {
         Log.d(TAG, "doSignup()");
         startActivity(new Intent(this, SignupActivity.class));
     }
@@ -316,7 +332,8 @@ public class LoginActivity extends AppCompatActivity
         Log.d(TAG, "saveCredential: " + credential);
         Auth.CredentialsApi.save(mGoogleApiClient, credential)
                 .setResultCallback(new ResultCallback<Status>() {
-                    @Override public void onResult(@NonNull Status status) {
+                    @Override
+                    public void onResult(@NonNull Status status) {
                         if (status.isSuccess()) {
                             goToContent();
                         } else {
@@ -340,16 +357,19 @@ public class LoginActivity extends AppCompatActivity
         finish();
     }
 
-    @Override public void onConnected(Bundle bundle) {
+    @Override
+    public void onConnected(Bundle bundle) {
         Log.d(TAG, "onConnected");
         requestCredentials();
     }
 
-    @Override public void onConnectionSuspended(int cause) {
+    @Override
+    public void onConnectionSuspended(int cause) {
         Log.d(TAG, "onConnectionSuspended: " + cause);
     }
 
-    @Override public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d(TAG, "onConnectionFailed: " + connectionResult);
     }
 

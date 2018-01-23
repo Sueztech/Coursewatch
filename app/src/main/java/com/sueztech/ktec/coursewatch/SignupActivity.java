@@ -38,27 +38,34 @@ import io.michaelrocks.libphonenumber.android.NumberParseException;
 import io.michaelrocks.libphonenumber.android.PhoneNumberUtil;
 import io.michaelrocks.libphonenumber.android.Phonenumber;
 
+@SuppressWarnings("WeakerAccess")
 public class SignupActivity extends AppCompatActivity {
 
     private static final String TAG = "SignupActivity";
-    @SuppressWarnings("WeakerAccess") @BindView(R.id.nameEditText) protected EditText nameEditText;
-    @SuppressWarnings("WeakerAccess") @BindView(R.id.emailEditText) protected EditText
-            emailEditText;
-    @SuppressWarnings("WeakerAccess") @BindView(R.id.passwordEditText) protected EditText
-            passEditText;
-    @SuppressWarnings("WeakerAccess") @BindView(R.id.confirmPasswordEditText) protected EditText
-            passConfEditText;
-    @SuppressWarnings("WeakerAccess") @BindView(R.id.phoneEditText) protected EditText telEditText;
-    @SuppressWarnings("WeakerAccess") @BindView(R.id.collegeSpinner) protected Spinner
-            collegeSpinner;
-    @SuppressWarnings("WeakerAccess") @BindView(R.id.signupButton) protected Button signupButton;
+
+    @BindView(R.id.nameEditText)
+    protected EditText nameEditText;
+    @BindView(R.id.emailEditText)
+    protected EditText emailEditText;
+    @BindView(R.id.passwordEditText)
+    protected EditText passEditText;
+    @BindView(R.id.confirmPasswordEditText)
+    protected EditText passConfEditText;
+    @BindView(R.id.phoneEditText)
+    protected EditText telEditText;
+    @BindView(R.id.collegeSpinner)
+    protected Spinner collegeSpinner;
+    @BindView(R.id.signupButton)
+    protected Button signupButton;
+
     private MessageDigest messageDigest;
     private PhoneNumberUtil phoneUtil;
     private ProgressDialog progressDialog;
     private RequestQueue requestQueue;
     private StringRequest signupRequest;
 
-    @Override protected void onCreate(Bundle savedInstanceState) {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
@@ -97,11 +104,13 @@ public class SignupActivity extends AppCompatActivity {
 
         JsonObjectRequest collegesRequest = new JsonObjectRequest(Config.SSO_COLLEGES_URL, null,
                 new Response.Listener<JSONObject>() {
-                    @Override public void onResponse(JSONObject response) {
+                    @Override
+                    public void onResponse(JSONObject response) {
                         finishInit(response);
                     }
                 }, new Response.ErrorListener() {
-            @Override public void onErrorResponse(VolleyError error) {
+            @Override
+            public void onErrorResponse(VolleyError error) {
                 Log.e(TAG, error.toString());
                 onInitFail();
             }
@@ -142,14 +151,16 @@ public class SignupActivity extends AppCompatActivity {
         progressDialog.setCancelable(true);
         progressDialog.setMessage("Signing up...");
         progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override public void onCancel(DialogInterface dialogInterface) {
+            @Override
+            public void onCancel(DialogInterface dialogInterface) {
                 if (signupRequest != null) {
                     signupRequest.cancel();
                 }
             }
         });
         progressDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override public void onDismiss(DialogInterface dialogInterface) {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
                 signupButton.setEnabled(true);
             }
         });
@@ -162,7 +173,8 @@ public class SignupActivity extends AppCompatActivity {
         finish();
     }
 
-    @Override public boolean onOptionsItemSelected(MenuItem item) {
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 setResult(RESULT_CANCELED, null);
@@ -235,7 +247,8 @@ public class SignupActivity extends AppCompatActivity {
 
     }
 
-    @SuppressWarnings("WeakerAccess") @OnClick(R.id.signupButton) protected void doSignup() {
+    @OnClick(R.id.signupButton)
+    protected void doSignup() {
 
         if (!validate()) {
             return;
@@ -246,17 +259,20 @@ public class SignupActivity extends AppCompatActivity {
 
         signupRequest = new StringRequest(Request.Method.POST, Config.SSO_SIGNUP_URL,
                 new Response.Listener<String>() {
-                    @Override public void onResponse(String response) {
+                    @Override
+                    public void onResponse(String response) {
                         onSignupRequestSuccess(response);
                     }
                 }, new Response.ErrorListener() {
-            @Override public void onErrorResponse(VolleyError error) {
+            @Override
+            public void onErrorResponse(VolleyError error) {
                 Log.e(TAG, error.toString());
                 onSignupRequestFail();
             }
         }) {
 
-            @Override protected Map<String, String> getParams() {
+            @Override
+            protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
                 params.put("name", nameEditText.getText().toString());
                 params.put("email", emailEditText.getText().toString());

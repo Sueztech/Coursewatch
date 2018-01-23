@@ -28,7 +28,8 @@ public class MainActivity extends AppCompatActivity
     private static final int REQUEST_LOGIN = 1;
     private GoogleApiClient mGoogleApiClient;
 
-    @Override protected void onCreate(Bundle savedInstanceState) {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setTheme(R.style.AppTheme_NoActionBar);
@@ -38,7 +39,8 @@ public class MainActivity extends AppCompatActivity
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View view) {
+            @Override
+            public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
@@ -57,7 +59,8 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_LOGIN) {
             if (resultCode == RESULT_OK) {
                 finishInit();
@@ -72,7 +75,8 @@ public class MainActivity extends AppCompatActivity
                 .enableAutoManage(this, 0, this).addApi(Auth.CREDENTIALS_API).build();
     }
 
-    @Override public void onBackPressed() {
+    @Override
+    public void onBackPressed() {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
@@ -81,13 +85,15 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    @Override public boolean onCreateOptionsMenu(Menu menu) {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
-    @Override public boolean onOptionsItemSelected(MenuItem item) {
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
@@ -101,7 +107,8 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody") @Override
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
@@ -129,15 +136,18 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    @Override public void onConnected(Bundle bundle) {
+    @Override
+    public void onConnected(Bundle bundle) {
         Log.d(TAG, "GoogleApiClient connected");
     }
 
-    @Override public void onConnectionSuspended(int cause) {
+    @Override
+    public void onConnectionSuspended(int cause) {
         Log.d(TAG, "GoogleApiClient is suspended with cause code: " + cause);
     }
 
-    @Override public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d(TAG, "GoogleApiClient failed to connect: " + connectionResult);
     }
 
