@@ -29,12 +29,14 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-        Requests.ResponseListener<JSONObject> {
+        Requests.ResponseListener<JSONObject>, GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = "MainActivity";
+
     private static final int REQUEST_LOGIN = 1;
-    private static final int STATUS_REQUEST = 1;
+
+    private static final int RID_STATUS = 1;
 
     private GoogleApiClient mGoogleApiClient;
 
@@ -53,8 +55,7 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Snackbar.make(view, "Session ID: " + sessionId, Snackbar.LENGTH_LONG).show();
             }
         });
 
@@ -92,7 +93,7 @@ public class MainActivity extends AppCompatActivity
 
         Map<String, String> params = new HashMap<>();
         params.put("session", sessionId);
-        Requests.addJsonRequest(STATUS_REQUEST, Config.Urls.Sso.STATUS, params, this);
+        Requests.addJsonRequest(RID_STATUS, Config.Urls.Sso.STATUS, params, this);
 
     }
 
@@ -119,7 +120,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void getUserData() {
-        Snackbar.make(findViewById(R.id.fab), sessionId, Snackbar.LENGTH_INDEFINITE).show();
+        //        Snackbar.make(findViewById(R.id.fab), sessionId, Snackbar.LENGTH_INDEFINITE)
+        // .show();
     }
 
     @Override
@@ -184,35 +186,28 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onConnected(Bundle bundle) {
-        Log.d(TAG, "GoogleApiClient connected");
-    }
-
-    @Override
-    public void onConnectionSuspended(int cause) {
-        Log.d(TAG, "GoogleApiClient is suspended with cause code: " + cause);
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.d(TAG, "GoogleApiClient failed to connect: " + connectionResult);
-    }
-
-    @Override
     public void onResponse(int id, JSONObject response) {
-        switch (id) {
-            case STATUS_REQUEST:
-                onStatusRequestSuccess(response);
-                break;
-        }
+        onStatusRequestSuccess(response);
     }
 
     @Override
     public void onError(int id, Exception error) {
-        switch (id) {
-            case STATUS_REQUEST:
-                onStatusRequestFail();
-                break;
-        }
+        onStatusRequestFail();
     }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        Log.v(TAG, "onConnected");
+    }
+
+    @Override
+    public void onConnectionSuspended(int cause) {
+        Log.d(TAG, "onConnectionSuspended: " + cause);
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.d(TAG, "onConnectionFailed: " + connectionResult);
+    }
+
 }

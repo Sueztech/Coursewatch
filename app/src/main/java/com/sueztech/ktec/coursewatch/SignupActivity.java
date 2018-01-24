@@ -34,8 +34,8 @@ import io.michaelrocks.libphonenumber.android.Phonenumber;
 
 @SuppressWarnings("WeakerAccess")
 public class SignupActivity extends AppCompatActivity
-        implements Requests.ResponseListener<JSONObject>, DialogInterface.OnShowListener,
-        DialogInterface.OnCancelListener, DialogInterface.OnDismissListener {
+        implements DialogInterface.OnShowListener, DialogInterface.OnCancelListener,
+        DialogInterface.OnDismissListener, Requests.ResponseListener<JSONObject> {
 
     private static final String TAG = "SignupActivity";
 
@@ -100,6 +100,17 @@ public class SignupActivity extends AppCompatActivity
 
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                setResult(RESULT_CANCELED, null);
+                finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     private void onCollegeListRequestSuccess(JSONObject collegeListResponse) {
 
         Log.v(TAG, "onCollegeListRequestSuccess");
@@ -139,17 +150,6 @@ public class SignupActivity extends AppCompatActivity
         progressDialog.dismiss();
         Toast.makeText(this, R.string.unexpected_error, Toast.LENGTH_SHORT).show();
         finish();
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                setResult(RESULT_CANCELED, null);
-                finish();
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     private boolean areFieldsValid() {
@@ -293,6 +293,23 @@ public class SignupActivity extends AppCompatActivity
     }
 
     @Override
+    public void onShow(DialogInterface dialog) {
+        signupButton.setEnabled(true);
+    }
+
+    @Override
+    public void onCancel(DialogInterface dialog) {
+        signupButton.setEnabled(false);
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        if (signupRequest != null) {
+            signupRequest.cancel();
+        }
+    }
+
+    @Override
     public void onResponse(int id, JSONObject response) {
         switch (id) {
             case RID_COLLEGE_LIST:
@@ -314,23 +331,6 @@ public class SignupActivity extends AppCompatActivity
                 onSignupRequestFail();
                 break;
         }
-    }
-
-    @Override
-    public void onCancel(DialogInterface dialog) {
-        signupButton.setEnabled(false);
-    }
-
-    @Override
-    public void onDismiss(DialogInterface dialog) {
-        if (signupRequest != null) {
-            signupRequest.cancel();
-        }
-    }
-
-    @Override
-    public void onShow(DialogInterface dialog) {
-        signupButton.setEnabled(true);
     }
 
 }
