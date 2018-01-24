@@ -17,9 +17,22 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -27,7 +40,12 @@ public class MainActivity extends AppCompatActivity
 
     private static final String TAG = "MainActivity";
     private static final int REQUEST_LOGIN = 1;
+
     private GoogleApiClient mGoogleApiClient;
+
+    private RequestQueue requestQueue;
+
+    private String sessionId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +74,8 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        requestQueue = Volley.newRequestQueue(this);
+
         startActivityForResult(new Intent(this, LoginActivity.class), REQUEST_LOGIN);
 
     }
@@ -64,7 +84,7 @@ public class MainActivity extends AppCompatActivity
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_LOGIN) {
             if (resultCode == RESULT_OK) {
-                Toast.makeText(this, data.getStringExtra("sessionId"), Toast.LENGTH_LONG).show();
+                sessionId = data.getStringExtra("sessionId");
                 finishInit();
             } else {
                 finish();
@@ -73,8 +93,56 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void finishInit() {
+
         mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this)
                 .enableAutoManage(this, 0, this).addApi(Auth.CREDENTIALS_API).build();
+
+        StringRequest statusRequest = new StringRequest(Request.Method.POST, Config.SSO_STATUS_URL,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        onStatusRequestSuccess(response);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(TAG, error.toString());
+                onStatusRequestFail();
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("session", sessionId);
+                return params;
+            }
+        };
+
+        requestQueue.add(statusRequest);
+    }
+
+    private void onStatusRequestSuccess(String response) {
+        try {
+            JSONObject responseJson = new JSONObject(response);
+            int status = responseJson.getInt("status");
+
+            if (status == 200) {
+                JSONArray fields = responseJson.getJSONArray("data");
+                Toast.makeText(this, "Logged in as " + fields.getString(0), Toast.LENGTH_SHORT)
+                        .show();
+            } else if (status == 400) {
+                throw new JSONException("Got status 400, invalid session ID");
+            } else {
+                throw new JSONException("Got unexpected status " + status);
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, e.toString());
+            onStatusRequestFail();
+        }
+    }
+
+    private void onStatusRequestFail() {
+        Toast.makeText(this, R.string.unexpected_error, Toast.LENGTH_SHORT).show();
     }
 
     @Override

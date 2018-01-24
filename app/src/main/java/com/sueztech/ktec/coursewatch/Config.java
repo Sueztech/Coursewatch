@@ -11,4 +11,6 @@ class Config {
 
     static final String SSO_LOGIN_URL = SSO_API_URL + "login.php";
 
+    static final String SSO_STATUS_URL = SSO_API_URL + "status.php";
+
 }
