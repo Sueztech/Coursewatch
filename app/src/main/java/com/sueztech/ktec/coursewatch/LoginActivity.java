@@ -17,7 +17,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
-import com.android.volley.VolleyError;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.credentials.Credential;
 import com.google.android.gms.auth.api.credentials.CredentialRequest;
@@ -44,7 +43,7 @@ import butterknife.OnClick;
 @SuppressWarnings("WeakerAccess")
 public class LoginActivity extends AppCompatActivity
         implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-        Utils.ResponseListener<JSONObject> {
+        Requests.ResponseListener<JSONObject> {
 
     private static final String TAG = "LoginActivity";
     private static final int RC_READ = 1;
@@ -96,7 +95,7 @@ public class LoginActivity extends AppCompatActivity
         });
 
         progressDialog = new ProgressDialog(this, R.style.AppTheme_LoginActivity_ProgressDialog);
-        progressDialog.setMessage("Logging you in...");
+        progressDialog.setMessage(getString(R.string.login_progress));
         progressDialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface dialog) {
@@ -183,9 +182,7 @@ public class LoginActivity extends AppCompatActivity
         params.put("email", emailEditText.getText().toString());
         messageDigest.update(passEditText.getText().toString().getBytes());
         params.put("pass", Utils.bytesToHex(messageDigest.digest()));
-        loginRequest = Utils
-                .addJsonRequest(LOGIN_REQUEST, Request.Method.POST, Config.Urls.Sso.LOGIN, params,
-                        this);
+        loginRequest = Requests.addJsonRequest(LOGIN_REQUEST, Config.Urls.Sso.LOGIN, params, this);
 
     }
 
@@ -359,7 +356,7 @@ public class LoginActivity extends AppCompatActivity
     }
 
     @Override
-    public void onErrorResponse(int id, VolleyError error) {
+    public void onError(int id, Exception error) {
         onLoginRequestFail();
     }
 

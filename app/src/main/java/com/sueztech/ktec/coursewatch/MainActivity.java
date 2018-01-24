@@ -17,8 +17,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.VolleyError;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -32,7 +30,7 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-        Utils.ResponseListener<JSONObject> {
+        Requests.ResponseListener<JSONObject> {
 
     private static final String TAG = "MainActivity";
     private static final int REQUEST_LOGIN = 1;
@@ -69,7 +67,7 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        Utils.initRequestQueue(this);
+        Requests.initQueue(this);
 
         startActivityForResult(new Intent(this, LoginActivity.class), REQUEST_LOGIN);
 
@@ -94,8 +92,7 @@ public class MainActivity extends AppCompatActivity
 
         Map<String, String> params = new HashMap<>();
         params.put("session", sessionId);
-        Utils.addJsonRequest(STATUS_REQUEST, Request.Method.POST, Config.Urls.Sso.STATUS, params,
-                this);
+        Requests.addJsonRequest(STATUS_REQUEST, Config.Urls.Sso.STATUS, params, this);
 
     }
 
@@ -211,7 +208,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onErrorResponse(int id, VolleyError error) {
+    public void onError(int id, Exception error) {
         switch (id) {
             case STATUS_REQUEST:
                 onStatusRequestFail();
