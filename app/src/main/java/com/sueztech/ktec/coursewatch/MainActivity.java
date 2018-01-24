@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
@@ -63,6 +64,7 @@ public class MainActivity extends AppCompatActivity
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_LOGIN) {
             if (resultCode == RESULT_OK) {
+                Toast.makeText(this, data.getStringExtra("sessionId"), Toast.LENGTH_LONG).show();
                 finishInit();
             } else {
                 finish();

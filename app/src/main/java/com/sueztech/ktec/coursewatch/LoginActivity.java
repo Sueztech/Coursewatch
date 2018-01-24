@@ -68,6 +68,8 @@ public class LoginActivity extends AppCompatActivity
     private GoogleApiClient mGoogleApiClient;
     private boolean mIsResolving;
 
+    private String mSessionId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -227,6 +229,7 @@ public class LoginActivity extends AppCompatActivity
                     .setPassword(passEditText.getText().toString()).build();
 
             if (status == 200) {
+                mSessionId = responseJson.getString("data");
                 saveCredential(credential);
             } else if (status == 401) {
                 JSONArray fields = responseJson.getJSONArray("data");
@@ -352,8 +355,7 @@ public class LoginActivity extends AppCompatActivity
 
     private void goToContent() {
         Log.d(TAG, "goToContent()");
-        // TODO: return session ID
-        setResult(RESULT_OK);
+        setResult(RESULT_OK, new Intent().putExtra("sessionId", mSessionId));
         finish();
     }
 
