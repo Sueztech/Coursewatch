@@ -2,15 +2,21 @@ package com.sueztech.ktec.coursewatch;
 
 @SuppressWarnings("WeakerAccess")
 class Config {
+    class Urls {
+        private static final String PROTO = "https://";
+        private static final String KTEC_API_URL = PROTO + "ktec.sueztech.com/api/";
+        private static final String CW_API_URL = PROTO + "coursewatch.sueztech.com/api/";
 
-    static final String PROTO = "https://";
-    static final String SSO_API_URL = PROTO + "ktec.sueztech.com/api/";
+        class Static {
+            private static final String PREFIX = KTEC_API_URL + "static_";
+            static final String COLLEGE_LIST = PREFIX + "colleges.php";
+        }
 
-    static final String SSO_COLLEGES_URL = SSO_API_URL + "colleges.php";
-    static final String SSO_SIGNUP_URL = SSO_API_URL + "signup.php";
-
-    static final String SSO_LOGIN_URL = SSO_API_URL + "login.php";
-
-    static final String SSO_STATUS_URL = SSO_API_URL + "status.php";
-
+        class Sso {
+            private static final String PREFIX = KTEC_API_URL + "sso_";
+            static final String SIGNUP = PREFIX + "signup.php";
+            static final String LOGIN = PREFIX + "login.php";
+            static final String STATUS = PREFIX + "status.php";
+        }
+    }
 }

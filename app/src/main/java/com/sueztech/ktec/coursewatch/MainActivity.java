@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity
         mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this)
                 .enableAutoManage(this, 0, this).addApi(Auth.CREDENTIALS_API).build();
 
-        StringRequest statusRequest = new StringRequest(Request.Method.POST, Config.SSO_STATUS_URL,
+        StringRequest statusRequest = new StringRequest(Request.Method.POST, Config.Urls.Sso.STATUS,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {

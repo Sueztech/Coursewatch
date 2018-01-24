@@ -102,13 +102,13 @@ public class SignupActivity extends AppCompatActivity {
 
         progressDialog.show();
 
-        JsonObjectRequest collegesRequest = new JsonObjectRequest(Config.SSO_COLLEGES_URL, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        finishInit(response);
-                    }
-                }, new Response.ErrorListener() {
+        JsonObjectRequest collegesRequest = new JsonObjectRequest(Config.Urls.Static.COLLEGE_LIST,
+                null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                finishInit(response);
+            }
+        }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.e(TAG, error.toString());
@@ -257,7 +257,7 @@ public class SignupActivity extends AppCompatActivity {
         signupButton.setEnabled(false);
         progressDialog.show();
 
-        signupRequest = new StringRequest(Request.Method.POST, Config.SSO_SIGNUP_URL,
+        signupRequest = new StringRequest(Request.Method.POST, Config.Urls.Sso.SIGNUP,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {

@@ -184,7 +184,7 @@ public class LoginActivity extends AppCompatActivity
 
         progressDialog.show();
 
-        loginRequest = new StringRequest(Request.Method.POST, Config.SSO_LOGIN_URL,
+        loginRequest = new StringRequest(Request.Method.POST, Config.Urls.Sso.LOGIN,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
