@@ -17,11 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.credentials.Credential;
 import com.google.android.gms.auth.api.credentials.CredentialRequest;
@@ -47,11 +43,13 @@ import butterknife.OnClick;
 
 @SuppressWarnings("WeakerAccess")
 public class LoginActivity extends AppCompatActivity
-        implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+        implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
+        Utils.ResponseListener<JSONObject> {
 
     private static final String TAG = "LoginActivity";
     private static final int RC_READ = 1;
     private static final int RC_SAVE = 2;
+    private static final int LOGIN_REQUEST = 1;
 
     @BindView(R.id.emailEditText)
     protected EditText emailEditText;
@@ -62,8 +60,7 @@ public class LoginActivity extends AppCompatActivity
 
     private MessageDigest messageDigest;
     private ProgressDialog progressDialog;
-    private RequestQueue requestQueue;
-    private StringRequest loginRequest;
+    private Request loginRequest;
 
     private GoogleApiClient mGoogleApiClient;
     private boolean mIsResolving;
@@ -86,8 +83,6 @@ public class LoginActivity extends AppCompatActivity
         } catch (NoSuchAlgorithmException e) {
             Log.wtf(TAG, e.toString());
         }
-
-        requestQueue = Volley.newRequestQueue(this);
 
         passEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -184,30 +179,13 @@ public class LoginActivity extends AppCompatActivity
 
         progressDialog.show();
 
-        loginRequest = new StringRequest(Request.Method.POST, Config.Urls.Sso.LOGIN,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        onLoginRequestSuccess(response);
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.toString());
-                onLoginRequestFail();
-            }
-        }) {
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<>();
-                params.put("email", emailEditText.getText().toString());
-                messageDigest.update(passEditText.getText().toString().getBytes());
-                params.put("pass", Util.bytesToHex(messageDigest.digest()));
-                return params;
-            }
-        };
-
-        requestQueue.add(loginRequest);
+        Map<String, String> params = new HashMap<>();
+        params.put("email", emailEditText.getText().toString());
+        messageDigest.update(passEditText.getText().toString().getBytes());
+        params.put("pass", Utils.bytesToHex(messageDigest.digest()));
+        loginRequest = Utils
+                .addJsonRequest(LOGIN_REQUEST, Request.Method.POST, Config.Urls.Sso.LOGIN, params,
+                        this);
 
     }
 
@@ -217,22 +195,21 @@ public class LoginActivity extends AppCompatActivity
         startActivity(new Intent(this, SignupActivity.class));
     }
 
-    private void onLoginRequestSuccess(String response) {
+    private void onLoginRequestSuccess(JSONObject response) {
 
         Log.d(TAG, "onLoginRequestSuccess: " + response);
 
         try {
 
-            JSONObject responseJson = new JSONObject(response);
-            int status = responseJson.getInt("status");
+            int status = response.getInt("status");
             Credential credential = new Credential.Builder(emailEditText.getText().toString())
                     .setPassword(passEditText.getText().toString()).build();
 
             if (status == 200) {
-                mSessionId = responseJson.getString("data");
+                mSessionId = response.getString("data");
                 saveCredential(credential);
             } else if (status == 401) {
-                JSONArray fields = responseJson.getJSONArray("data");
+                JSONArray fields = response.getJSONArray("data");
                 for (int i = 0; i < fields.length(); i++) {
                     switch (fields.getString(i)) {
                         case "email":
@@ -253,7 +230,7 @@ public class LoginActivity extends AppCompatActivity
                     }
                 }
             } else if (status == 500) {
-                throw new JSONException("Server error: " + responseJson.get("data"));
+                throw new JSONException("Server error: " + response.get("data"));
             } else {
                 throw new JSONException("Unrecognized status code: " + status);
             }
@@ -373,6 +350,17 @@ public class LoginActivity extends AppCompatActivity
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d(TAG, "onConnectionFailed: " + connectionResult);
+    }
+
+
+    @Override
+    public void onResponse(int id, JSONObject response) {
+        onLoginRequestSuccess(response);
+    }
+
+    @Override
+    public void onErrorResponse(int id, VolleyError error) {
+        onLoginRequestFail();
     }
 
 }

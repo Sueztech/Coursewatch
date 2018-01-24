@@ -18,16 +18,11 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,14 +31,14 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
+        Utils.ResponseListener<JSONObject> {
 
     private static final String TAG = "MainActivity";
     private static final int REQUEST_LOGIN = 1;
+    private static final int STATUS_REQUEST = 1;
 
     private GoogleApiClient mGoogleApiClient;
-
-    private RequestQueue requestQueue;
 
     private String sessionId;
 
@@ -74,7 +69,7 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        requestQueue = Volley.newRequestQueue(this);
+        Utils.initRequestQueue(this);
 
         startActivityForResult(new Intent(this, LoginActivity.class), REQUEST_LOGIN);
 
@@ -97,43 +92,23 @@ public class MainActivity extends AppCompatActivity
         mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this)
                 .enableAutoManage(this, 0, this).addApi(Auth.CREDENTIALS_API).build();
 
-        StringRequest statusRequest = new StringRequest(Request.Method.POST, Config.Urls.Sso.STATUS,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        onStatusRequestSuccess(response);
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.toString());
-                onStatusRequestFail();
-            }
-        }) {
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<>();
-                params.put("session", sessionId);
-                return params;
-            }
-        };
+        Map<String, String> params = new HashMap<>();
+        params.put("session", sessionId);
+        Utils.addJsonRequest(STATUS_REQUEST, Request.Method.POST, Config.Urls.Sso.STATUS, params,
+                this);
 
-        requestQueue.add(statusRequest);
     }
 
-    private void onStatusRequestSuccess(String response) {
+    private void onStatusRequestSuccess(JSONObject response) {
         try {
-            JSONObject responseJson = new JSONObject(response);
-            int status = responseJson.getInt("status");
-
-            if (status == 200) {
-                JSONArray fields = responseJson.getJSONArray("data");
-                Toast.makeText(this, "Logged in as " + fields.getString(0), Toast.LENGTH_SHORT)
-                        .show();
-            } else if (status == 400) {
-                throw new JSONException("Got status 400, invalid session ID");
-            } else {
-                throw new JSONException("Got unexpected status " + status);
+            switch (response.getInt("status")) {
+                case 200:
+                    getUserData();
+                    break;
+                case 400:
+                    throw new JSONException("Got status 400, invalid session ID");
+                default:
+                    throw new JSONException("Unexpected status: " + response.getInt("status"));
             }
         } catch (JSONException e) {
             Log.e(TAG, e.toString());
@@ -143,6 +118,11 @@ public class MainActivity extends AppCompatActivity
 
     private void onStatusRequestFail() {
         Toast.makeText(this, R.string.unexpected_error, Toast.LENGTH_SHORT).show();
+        startActivityForResult(new Intent(this, LoginActivity.class), REQUEST_LOGIN);
+    }
+
+    private void getUserData() {
+        Snackbar.make(findViewById(R.id.fab), sessionId, Snackbar.LENGTH_INDEFINITE).show();
     }
 
     @Override
@@ -221,4 +201,21 @@ public class MainActivity extends AppCompatActivity
         Log.d(TAG, "GoogleApiClient failed to connect: " + connectionResult);
     }
 
+    @Override
+    public void onResponse(int id, JSONObject response) {
+        switch (id) {
+            case STATUS_REQUEST:
+                onStatusRequestSuccess(response);
+                break;
+        }
+    }
+
+    @Override
+    public void onErrorResponse(int id, VolleyError error) {
+        switch (id) {
+            case STATUS_REQUEST:
+                onStatusRequestFail();
+                break;
+        }
+    }
 }

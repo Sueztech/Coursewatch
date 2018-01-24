@@ -14,12 +14,8 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,9 +35,12 @@ import io.michaelrocks.libphonenumber.android.PhoneNumberUtil;
 import io.michaelrocks.libphonenumber.android.Phonenumber;
 
 @SuppressWarnings("WeakerAccess")
-public class SignupActivity extends AppCompatActivity {
+public class SignupActivity extends AppCompatActivity
+        implements Utils.ResponseListener<JSONObject> {
 
     private static final String TAG = "SignupActivity";
+    private static final int COLLEGE_LIST_REQUEST = 1;
+    private static final int SIGNUP_REQUEST = 2;
 
     @BindView(R.id.nameEditText)
     protected EditText nameEditText;
@@ -61,7 +60,6 @@ public class SignupActivity extends AppCompatActivity {
     private MessageDigest messageDigest;
     private PhoneNumberUtil phoneUtil;
     private ProgressDialog progressDialog;
-    private RequestQueue requestQueue;
     private StringRequest signupRequest;
 
     @Override
@@ -93,30 +91,13 @@ public class SignupActivity extends AppCompatActivity {
             Log.wtf(TAG, e.toString());
         }
 
-        requestQueue = Volley.newRequestQueue(this);
-
         progressDialog = new ProgressDialog(this, R.style.AppTheme_LoginActivity_ProgressDialog);
-
         progressDialog.setMessage("Loading...");
         progressDialog.setCancelable(false);
-
         progressDialog.show();
 
-        JsonObjectRequest collegesRequest = new JsonObjectRequest(Config.Urls.Static.COLLEGE_LIST,
-                null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                finishInit(response);
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.toString());
-                onInitFail();
-            }
-        });
-
-        requestQueue.add(collegesRequest);
+        Utils.addJsonRequest(COLLEGE_LIST_REQUEST, Request.Method.GET,
+                Config.Urls.Static.COLLEGE_LIST, null, this);
 
     }
 
@@ -257,48 +238,27 @@ public class SignupActivity extends AppCompatActivity {
         signupButton.setEnabled(false);
         progressDialog.show();
 
-        signupRequest = new StringRequest(Request.Method.POST, Config.Urls.Sso.SIGNUP,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        onSignupRequestSuccess(response);
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.toString());
-                onSignupRequestFail();
-            }
-        }) {
-
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<>();
-                params.put("name", nameEditText.getText().toString());
-                params.put("email", emailEditText.getText().toString());
-                messageDigest.update(passEditText.getText().toString().getBytes());
-                params.put("pass", Util.bytesToHex(messageDigest.digest()));
-                messageDigest.update(passConfEditText.getText().toString().getBytes());
-                params.put("passConf", Util.bytesToHex(messageDigest.digest()));
-                params.put("tel", telEditText.getText().toString());
-                params.put("college", ((College) collegeSpinner.getSelectedItem()).getId());
-                return params;
-            }
-
-        };
-
-        requestQueue.add(signupRequest);
+        Map<String, String> params = new HashMap<>();
+        params.put("name", nameEditText.getText().toString());
+        params.put("email", emailEditText.getText().toString());
+        messageDigest.update(passEditText.getText().toString().getBytes());
+        params.put("pass", Utils.bytesToHex(messageDigest.digest()));
+        messageDigest.update(passConfEditText.getText().toString().getBytes());
+        params.put("passConf", Utils.bytesToHex(messageDigest.digest()));
+        params.put("tel", telEditText.getText().toString());
+        params.put("college", ((College) collegeSpinner.getSelectedItem()).getId());
+        Utils.addJsonRequest(SIGNUP_REQUEST, Request.Method.POST, Config.Urls.Sso.SIGNUP, params,
+                this);
 
     }
 
-    private void onSignupRequestSuccess(String response) {
+    private void onSignupRequestSuccess(JSONObject response) {
 
-        Log.i(TAG, response);
+        Log.i(TAG, response.toString());
 
         try {
 
-            JSONObject responseJson = new JSONObject(response);
-            int status = responseJson.getInt("status");
+            int status = response.getInt("status");
 
             if (status == 200) {
                 // TODO: show email verification screen
@@ -306,7 +266,7 @@ public class SignupActivity extends AppCompatActivity {
                 setResult(RESULT_OK);
                 finish();
             } else if (status == 406) {
-                JSONArray fields = responseJson.getJSONArray("data");
+                JSONArray fields = response.getJSONArray("data");
                 for (int i = 0; i < fields.length(); i++) {
                     switch (fields.getString(i)) {
                         case "email":
@@ -321,7 +281,7 @@ public class SignupActivity extends AppCompatActivity {
                 }
             } else if (status == 500) {
                 // Exception occurred on the server
-                throw new JSONException("Server error: " + responseJson.get("data"));
+                throw new JSONException("Server error: " + response.get("data"));
             } else {
                 throw new JSONException("Got unexpected status " + status);
             }
@@ -341,4 +301,27 @@ public class SignupActivity extends AppCompatActivity {
         Toast.makeText(this, R.string.signup_error, Toast.LENGTH_SHORT).show();
     }
 
+    @Override
+    public void onResponse(int id, JSONObject response) {
+        switch (id) {
+            case COLLEGE_LIST_REQUEST:
+                finishInit(response);
+                break;
+            case SIGNUP_REQUEST:
+                onSignupRequestSuccess(response);
+                break;
+        }
+    }
+
+    @Override
+    public void onErrorResponse(int id, VolleyError error) {
+        switch (id) {
+            case COLLEGE_LIST_REQUEST:
+                onInitFail();
+                break;
+            case SIGNUP_REQUEST:
+                onSignupRequestFail();
+                break;
+        }
+    }
 }
