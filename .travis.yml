@@ -7,10 +7,5 @@ android:
     - build-tools-26.0.2
     - android-26
     - sys-img-armeabi-v7a-android-26
-before_script:
-  - echo no | android create avd --force -n test -t android-26 --abi armeabi-v7a
-  - emulator -avd test -no-audio -no-window &
-  - android-wait-for-emulator
-#  - adb shell input keyevent 82 &
-#script:
-#  - ./gradlew clean testDebugUnitTest lint
+script:
+  - ./gradlew clean :app:generateDebugSources :app:generateDebugAndroidTestSources :app:mockableAndroidJar :app:assembleDebug :app:assembleRelease
