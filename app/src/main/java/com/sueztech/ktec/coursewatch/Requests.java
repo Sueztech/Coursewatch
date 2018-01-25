@@ -23,7 +23,7 @@ class Requests {
 
     static void initQueue(Context context) {
         Log.v(TAG, "initQueue");
-        if (requestQueue != null) {
+        if (requestQueue == null) {
             requestQueue = Volley.newRequestQueue(context);
         }
     }

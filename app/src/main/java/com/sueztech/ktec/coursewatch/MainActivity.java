@@ -28,9 +28,6 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         Requests.ResponseListener<JSONObject>, GoogleApiClient.ConnectionCallbacks,
@@ -43,12 +40,6 @@ public class MainActivity extends AppCompatActivity
     private static final int RID_STATUS = 1;
     private static final int RID_USER_NAME = 2;
     private static final int RID_USER_EMAIL = 3;
-
-    @BindView(R.id.user_name)
-    TextView userNameTextView;
-
-    @BindView(R.id.user_email)
-    TextView userEmailTextView;
 
     private GoogleApiClient mGoogleApiClient;
 
@@ -63,7 +54,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        ButterKnife.bind(this);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -144,7 +134,8 @@ public class MainActivity extends AppCompatActivity
         try {
             switch (response.getInt("status")) {
                 case 200:
-                    userNameTextView.setText(response.getString("data"));
+                    TextView userName = findViewById(R.id.user_name);
+                    userName.setText(response.getString("data"));
                     break;
                 case 400:
                     throw new JSONException("Got status 400, invalid session ID");
@@ -167,7 +158,8 @@ public class MainActivity extends AppCompatActivity
         try {
             switch (response.getInt("status")) {
                 case 200:
-                    userNameTextView.setText(response.getString("data"));
+                    TextView userEmail = findViewById(R.id.user_email);
+                    userEmail.setText(response.getString("data"));
                     break;
                 case 400:
                     throw new JSONException("Got status 400, invalid session ID");
@@ -176,7 +168,7 @@ public class MainActivity extends AppCompatActivity
             }
         } catch (JSONException e) {
             Log.e(TAG, e.toString());
-            onNameRequestFail();
+            onEmailRequestFail();
         }
     }
 
