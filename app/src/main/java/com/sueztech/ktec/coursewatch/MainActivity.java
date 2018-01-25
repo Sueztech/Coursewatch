@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
@@ -26,6 +27,9 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -40,6 +44,12 @@ public class MainActivity extends AppCompatActivity
     private static final int RID_USER_NAME = 2;
     private static final int RID_USER_EMAIL = 3;
 
+    @BindView(R.id.user_name)
+    TextView userNameTextView;
+
+    @BindView(R.id.user_email)
+    TextView userEmailTextView;
+
     private GoogleApiClient mGoogleApiClient;
 
     private String sessionId;
@@ -53,6 +63,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        ButterKnife.bind(this);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -101,6 +112,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void onStatusRequestSuccess(JSONObject response) {
+        Log.v(TAG, "onStatusRequestSuccess");
         try {
             switch (response.getInt("status")) {
                 case 200:
@@ -128,19 +140,49 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void onNameRequestSuccess(JSONObject response) {
-
+        Log.v(TAG, "onNameRequestSuccess");
+        try {
+            switch (response.getInt("status")) {
+                case 200:
+                    userNameTextView.setText(response.getString("data"));
+                    break;
+                case 400:
+                    throw new JSONException("Got status 400, invalid session ID");
+                default:
+                    throw new JSONException("Unexpected status: " + response.getInt("status"));
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, e.toString());
+            onNameRequestFail();
+        }
     }
 
-    private void onNameRequestError() {
-
+    private void onNameRequestFail() {
+        Log.v(TAG, "onNameRequestFail");
+        Toast.makeText(this, R.string.unexpected_error, Toast.LENGTH_SHORT).show();
     }
 
     private void onEmailRequestSuccess(JSONObject response) {
-
+        Log.v(TAG, "onEmailRequestSuccess");
+        try {
+            switch (response.getInt("status")) {
+                case 200:
+                    userNameTextView.setText(response.getString("data"));
+                    break;
+                case 400:
+                    throw new JSONException("Got status 400, invalid session ID");
+                default:
+                    throw new JSONException("Unexpected status: " + response.getInt("status"));
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, e.toString());
+            onNameRequestFail();
+        }
     }
 
-    private void onEmailRequestError() {
-
+    private void onEmailRequestFail() {
+        Log.v(TAG, "onEmailRequestFail");
+        Toast.makeText(this, R.string.unexpected_error, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -226,10 +268,10 @@ public class MainActivity extends AppCompatActivity
                 onStatusRequestFail();
                 break;
             case RID_USER_NAME:
-                onNameRequestError();
+                onNameRequestFail();
                 break;
             case RID_USER_EMAIL:
-                onEmailRequestError();
+                onEmailRequestFail();
                 break;
         }
     }
