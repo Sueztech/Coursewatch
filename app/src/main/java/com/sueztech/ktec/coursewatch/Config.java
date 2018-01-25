@@ -19,6 +19,12 @@ class Config {
             static final String STATUS = PREFIX + "status.php";
         }
 
+        class User {
+            private static final String PREFIX = KTEC_API_URL + "user_";
+            static final String NAME = PREFIX + "name.php";
+            static final String EMAIL = PREFIX + "email.php";
+        }
+
     }
 
 }

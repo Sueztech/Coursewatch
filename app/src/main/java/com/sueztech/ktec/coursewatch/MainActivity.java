@@ -37,10 +37,13 @@ public class MainActivity extends AppCompatActivity
     private static final int REQUEST_LOGIN = 1;
 
     private static final int RID_STATUS = 1;
+    private static final int RID_USER_NAME = 2;
+    private static final int RID_USER_EMAIL = 3;
 
     private GoogleApiClient mGoogleApiClient;
 
     private String sessionId;
+    private Map<String, String> sessionIdParam;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +82,8 @@ public class MainActivity extends AppCompatActivity
         if (requestCode == REQUEST_LOGIN) {
             if (resultCode == RESULT_OK) {
                 sessionId = data.getStringExtra("sessionId");
+                sessionIdParam = new HashMap<>();
+                sessionIdParam.put("session", sessionId);
                 finishInit();
             } else {
                 finish();
@@ -91,9 +96,7 @@ public class MainActivity extends AppCompatActivity
         mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this)
                 .enableAutoManage(this, 0, this).addApi(Auth.CREDENTIALS_API).build();
 
-        Map<String, String> params = new HashMap<>();
-        params.put("session", sessionId);
-        Requests.addJsonRequest(RID_STATUS, Config.Urls.Sso.STATUS, params, this);
+        Requests.addJsonRequest(RID_STATUS, Config.Urls.Sso.STATUS, sessionIdParam, this);
 
     }
 
@@ -120,8 +123,24 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void getUserData() {
-        //        Snackbar.make(findViewById(R.id.fab), sessionId, Snackbar.LENGTH_INDEFINITE)
-        // .show();
+        Requests.addJsonRequest(RID_USER_NAME, Config.Urls.User.NAME, sessionIdParam, this);
+        Requests.addJsonRequest(RID_USER_EMAIL, Config.Urls.User.EMAIL, sessionIdParam, this);
+    }
+
+    private void onNameRequestSuccess(JSONObject response) {
+
+    }
+
+    private void onNameRequestError() {
+
+    }
+
+    private void onEmailRequestSuccess(JSONObject response) {
+
+    }
+
+    private void onEmailRequestError() {
+
     }
 
     @Override
@@ -187,12 +206,32 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onResponse(int id, JSONObject response) {
-        onStatusRequestSuccess(response);
+        switch (id) {
+            case RID_STATUS:
+                onStatusRequestSuccess(response);
+                break;
+            case RID_USER_NAME:
+                onNameRequestSuccess(response);
+                break;
+            case RID_USER_EMAIL:
+                onEmailRequestSuccess(response);
+                break;
+        }
     }
 
     @Override
     public void onError(int id, Exception error) {
-        onStatusRequestFail();
+        switch (id) {
+            case RID_STATUS:
+                onStatusRequestFail();
+                break;
+            case RID_USER_NAME:
+                onNameRequestError();
+                break;
+            case RID_USER_EMAIL:
+                onEmailRequestError();
+                break;
+        }
     }
 
     @Override
