@@ -1,13 +1,17 @@
 language: android
 android:
   components:
-    - tools
-    - platform-tools
-    - tools
-    - build-tools-26.0.2
-    - android-26
+  - tools
+  - platform-tools
+  - tools
+  - build-tools-26.0.2
+  - android-26
 cache:
   directories:
-    - $HOME/.gradle
+  - "$HOME/.gradle"
 script:
-  - ./gradlew clean :app:generateDebugSources :app:generateDebugAndroidTestSources :app:mockableAndroidJar :app:assembleDebug :app:assembleRelease
+- "./gradlew clean :app:generateDebugSources :app:generateDebugAndroidTestSources
+  :app:mockableAndroidJar :app:assembleDebug :app:assembleRelease"
+notifications:
+  slack:
+    secure: Efr5neRlctahucLM9N5kihJzB66SuXn3J8eHjq6eRt8PSazZR3FGeba/eJk7ncFHiSadKKsOtUM3z6JQGDBKbXtwXH7X8+QbLjSE2O0RX0njp+jP1hISF74KNS/2OqFywPWe3Klb5Q8mhTD8sEVXIHOHXy85Dd0+zXUBDHvY4tFHwolTCVl35UA6+OHH7mparfG+a1lny/4b9QS0abu9BFil59lzsUHxWOjy2tCP9Ydd9R81mSrEkrzUVFsLrBnZYCHxei6pfTgtrScxfJMmIcaVrGBrHYMunDPZsfCgraIwKresDho/sGbuFZYuBBheWQhlTq0FriU6sJkdWdaS810tcmt79y+EPkYeDK9MhjBQFeo/6t5/skOVpxrIFlKH8MMWJIOu6a7ar7IEBLhlj+pbx1Z2qptyHInm9Bxt+R7+GqTEKXuZalu/ypvOHQxRk9ap4t1mmrf6QNj0Bm/duC/BvR28hmYtYDi2ukpBHycVJJvLCBCdBUEPYIL+ZWTVy6UbqbR9rGWv02CpVu55QZV4LjkYJ4Na1FCuWJ08cIcWdd0VRlnNRG/UaQD8PEfmgOOiUyG9doIyCZW389x8oRhPk9NaPvL+IXibOexVX/N+w6EO59f1F7BLTNzAoJRhBvbURHtw5u0RUR+5EhIQ+Zn0NB8wQi1BenqYJEzRnS8=
