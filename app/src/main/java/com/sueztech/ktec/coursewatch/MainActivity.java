@@ -15,18 +15,36 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+        Requests.ResponseListener<JSONObject>, GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = "MainActivity";
+
     private static final int REQUEST_LOGIN = 1;
+
+    private static final int RID_STATUS = 1;
+    private static final int RID_USER_NAME = 2;
+    private static final int RID_USER_EMAIL = 3;
+
     private GoogleApiClient mGoogleApiClient;
+
+    private String sessionId;
+    private Map<String, String> sessionIdParam;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,8 +59,7 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Snackbar.make(view, "Session ID: " + sessionId, Snackbar.LENGTH_LONG).show();
             }
         });
 
@@ -55,6 +72,8 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        Requests.initQueue(this);
+
         startActivityForResult(new Intent(this, LoginActivity.class), REQUEST_LOGIN);
 
     }
@@ -63,6 +82,9 @@ public class MainActivity extends AppCompatActivity
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_LOGIN) {
             if (resultCode == RESULT_OK) {
+                sessionId = data.getStringExtra("sessionId");
+                sessionIdParam = new HashMap<>();
+                sessionIdParam.put("session", sessionId);
                 finishInit();
             } else {
                 finish();
@@ -71,8 +93,88 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void finishInit() {
+
         mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this)
                 .enableAutoManage(this, 0, this).addApi(Auth.CREDENTIALS_API).build();
+
+        Requests.addJsonRequest(RID_STATUS, Config.Urls.Sso.STATUS, sessionIdParam, this);
+
+    }
+
+    private void onStatusRequestSuccess(JSONObject response) {
+        Log.v(TAG, "onStatusRequestSuccess");
+        try {
+            switch (response.getInt("status")) {
+                case 200:
+                    getUserData();
+                    break;
+                case 400:
+                    throw new JSONException("Got status 400, invalid session ID");
+                default:
+                    throw new JSONException("Unexpected status: " + response.getInt("status"));
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, e.toString());
+            onStatusRequestFail();
+        }
+    }
+
+    private void onStatusRequestFail() {
+        Toast.makeText(this, R.string.unexpected_error, Toast.LENGTH_SHORT).show();
+        startActivityForResult(new Intent(this, LoginActivity.class), REQUEST_LOGIN);
+    }
+
+    private void getUserData() {
+        Requests.addJsonRequest(RID_USER_NAME, Config.Urls.User.NAME, sessionIdParam, this);
+        Requests.addJsonRequest(RID_USER_EMAIL, Config.Urls.User.EMAIL, sessionIdParam, this);
+    }
+
+    private void onNameRequestSuccess(JSONObject response) {
+        Log.v(TAG, "onNameRequestSuccess");
+        try {
+            switch (response.getInt("status")) {
+                case 200:
+                    TextView userName = findViewById(R.id.user_name);
+                    userName.setText(response.getString("data"));
+                    break;
+                case 400:
+                    throw new JSONException("Got status 400, invalid session ID");
+                default:
+                    throw new JSONException("Unexpected status: " + response.getInt("status"));
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, e.toString());
+            onNameRequestFail();
+        }
+    }
+
+    private void onNameRequestFail() {
+        Log.v(TAG, "onNameRequestFail");
+        Toast.makeText(this, R.string.unexpected_error, Toast.LENGTH_SHORT).show();
+    }
+
+    private void onEmailRequestSuccess(JSONObject response) {
+        Log.v(TAG, "onEmailRequestSuccess");
+        try {
+            switch (response.getInt("status")) {
+                case 200:
+                    TextView userEmail = findViewById(R.id.user_email);
+                    userEmail.setText(response.getString("data"));
+                    break;
+                case 400:
+                    throw new JSONException("Got status 400, invalid session ID");
+                default:
+                    throw new JSONException("Unexpected status: " + response.getInt("status"));
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, e.toString());
+            onEmailRequestFail();
+        }
+    }
+
+    private void onEmailRequestFail() {
+        Log.v(TAG, "onEmailRequestFail");
+        Toast.makeText(this, R.string.unexpected_error, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -137,18 +239,48 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void onResponse(int id, JSONObject response) {
+        switch (id) {
+            case RID_STATUS:
+                onStatusRequestSuccess(response);
+                break;
+            case RID_USER_NAME:
+                onNameRequestSuccess(response);
+                break;
+            case RID_USER_EMAIL:
+                onEmailRequestSuccess(response);
+                break;
+        }
+    }
+
+    @Override
+    public void onError(int id, Exception error) {
+        switch (id) {
+            case RID_STATUS:
+                onStatusRequestFail();
+                break;
+            case RID_USER_NAME:
+                onNameRequestFail();
+                break;
+            case RID_USER_EMAIL:
+                onEmailRequestFail();
+                break;
+        }
+    }
+
+    @Override
     public void onConnected(Bundle bundle) {
-        Log.d(TAG, "GoogleApiClient connected");
+        Log.v(TAG, "onConnected");
     }
 
     @Override
     public void onConnectionSuspended(int cause) {
-        Log.d(TAG, "GoogleApiClient is suspended with cause code: " + cause);
+        Log.d(TAG, "onConnectionSuspended: " + cause);
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.d(TAG, "GoogleApiClient failed to connect: " + connectionResult);
+        Log.d(TAG, "onConnectionFailed: " + connectionResult);
     }
 
 }

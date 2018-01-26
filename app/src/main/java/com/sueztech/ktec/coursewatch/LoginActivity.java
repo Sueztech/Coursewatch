@@ -17,11 +17,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.credentials.Credential;
 import com.google.android.gms.auth.api.credentials.CredentialRequest;
@@ -47,45 +42,47 @@ import butterknife.OnClick;
 
 @SuppressWarnings("WeakerAccess")
 public class LoginActivity extends AppCompatActivity
-        implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+        implements DialogInterface.OnShowListener, DialogInterface.OnCancelListener,
+        DialogInterface.OnDismissListener, Requests.ResponseListener<JSONObject>,
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = "LoginActivity";
+
     private static final int RC_READ = 1;
     private static final int RC_SAVE = 2;
 
+    private static final int RID_LOGIN = 1;
+
     @BindView(R.id.emailEditText)
     protected EditText emailEditText;
+
     @BindView(R.id.passwordEditText)
     protected EditText passEditText;
+
     @BindView(R.id.loginButton)
     protected Button loginButton;
 
     private MessageDigest messageDigest;
     private ProgressDialog progressDialog;
-    private RequestQueue requestQueue;
-    private StringRequest loginRequest;
+    private Request loginRequest;
 
     private GoogleApiClient mGoogleApiClient;
     private boolean mIsResolving;
+
+    private String mSessionId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate: " + savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
-
-        mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this)
-                .enableAutoManage(this, 0, this).addApi(Auth.CREDENTIALS_API).build();
 
         try {
             messageDigest = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
             Log.wtf(TAG, e.toString());
         }
-
-        requestQueue = Volley.newRequestQueue(this);
 
         passEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -99,36 +96,19 @@ public class LoginActivity extends AppCompatActivity
         });
 
         progressDialog = new ProgressDialog(this, R.style.AppTheme_LoginActivity_ProgressDialog);
-        progressDialog.setMessage("Logging you in...");
-        progressDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(DialogInterface dialog) {
-                loginButton.setEnabled(false);
-            }
-        });
-        progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialogInterface) {
-                if (loginRequest != null) {
-                    loginRequest.cancel();
-                }
-            }
-        });
-        progressDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialogInterface) {
-                loginButton.setEnabled(true);
-            }
-        });
+        progressDialog.setMessage(getString(R.string.login_progress));
+        progressDialog.setOnShowListener(this);
+        progressDialog.setOnCancelListener(this);
+        progressDialog.setOnDismissListener(this);
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this)
+                .enableAutoManage(this, 0, this).addApi(Auth.CREDENTIALS_API).build();
 
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, "onActivityResult: " + requestCode + ", " + resultCode + ", " + data);
-
         if (requestCode == RC_READ) {
             if (resultCode == RESULT_OK) {
                 Credential credential = data.getParcelableExtra(Credential.EXTRA_KEY);
@@ -137,26 +117,23 @@ public class LoginActivity extends AppCompatActivity
         } else if (requestCode == RC_SAVE) {
             goToContent();
         }
-
         mIsResolving = false;
-
     }
 
-    private boolean validate() {
+    private boolean areFieldsValid() {
 
-        Log.d(TAG, "validate()");
-
-        String email = emailEditText.getText().toString();
-        String password = passEditText.getText().toString();
+        Log.v(TAG, "areFieldsValid");
 
         boolean valid = true;
 
+        String password = passEditText.getText().toString();
         if (password.isEmpty()) {
             passEditText.setError(getString(R.string.err_400_pass_login));
             passEditText.requestFocus();
             valid = false;
         }
 
+        String email = emailEditText.getText().toString();
         if (email.isEmpty()) {
             emailEditText.setError(getString(R.string.err_400_email));
             emailEditText.requestFocus();
@@ -174,85 +151,71 @@ public class LoginActivity extends AppCompatActivity
     @OnClick(R.id.loginButton)
     protected void doLogin() {
 
-        Log.d(TAG, "doLogin()");
+        Log.v(TAG, "doLogin");
 
-        if (!validate()) {
+        if (!areFieldsValid()) {
             return;
         }
 
         progressDialog.show();
 
-        loginRequest = new StringRequest(Request.Method.POST, Config.SSO_LOGIN_URL,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        onLoginRequestSuccess(response);
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.toString());
-                onLoginRequestFail();
-            }
-        }) {
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<>();
-                params.put("email", emailEditText.getText().toString());
-                messageDigest.update(passEditText.getText().toString().getBytes());
-                params.put("pass", Util.bytesToHex(messageDigest.digest()));
-                return params;
-            }
-        };
-
-        requestQueue.add(loginRequest);
+        Map<String, String> params = new HashMap<>();
+        params.put("email", emailEditText.getText().toString());
+        messageDigest.update(passEditText.getText().toString().getBytes());
+        params.put("pass", Utils.bytesToHex(messageDigest.digest()));
+        loginRequest = Requests.addJsonRequest(RID_LOGIN, Config.Urls.Sso.LOGIN, params, this);
 
     }
 
     @OnClick(R.id.signupTextView)
     protected void doSignup() {
-        Log.d(TAG, "doSignup()");
+        Log.v(TAG, "doSignup");
         startActivity(new Intent(this, SignupActivity.class));
     }
 
-    private void onLoginRequestSuccess(String response) {
+    private void onLoginRequestSuccess(JSONObject response) {
 
-        Log.d(TAG, "onLoginRequestSuccess: " + response);
+        Log.v(TAG, "onLoginRequestSuccess");
 
         try {
 
-            JSONObject responseJson = new JSONObject(response);
-            int status = responseJson.getInt("status");
             Credential credential = new Credential.Builder(emailEditText.getText().toString())
                     .setPassword(passEditText.getText().toString()).build();
 
-            if (status == 200) {
-                saveCredential(credential);
-            } else if (status == 401) {
-                JSONArray fields = responseJson.getJSONArray("data");
-                for (int i = 0; i < fields.length(); i++) {
-                    switch (fields.getString(i)) {
-                        case "email":
-                        case "pass":
-                            passEditText.setError(getString(R.string.err_401_email_pass));
-                            passEditText.requestFocus();
-                            deleteCredential(credential);
-                            requestCredentials();
-                            break;
-                        case "time":
-                            passEditText.setError(getString(R.string.err_401_time));
-                            passEditText.requestFocus();
-                            break;
-                        default:
-                            Log.e(TAG, "Got unknown field " + fields.getString(i)
-                                    + " in 401 response");
-                            break;
+            switch (response.getInt("status")) {
+
+                case 200:
+                    mSessionId = response.getString("data");
+                    saveCredential(credential);
+                    break;
+
+                case 401:
+                    JSONArray fields = response.getJSONArray("data");
+                    for (int i = 0; i < fields.length(); i++) {
+                        switch (fields.getString(i)) {
+                            case "email":
+                            case "pass":
+                                passEditText.setError(getString(R.string.err_401_email_pass));
+                                passEditText.requestFocus();
+                                deleteCredential(credential);
+                                requestCredentials();
+                                break;
+                            case "time":
+                                passEditText.setError(getString(R.string.err_401_time));
+                                passEditText.requestFocus();
+                                break;
+                            default:
+                                Log.e(TAG, "Unknown field (401 response): " + fields.getString(i));
+                                break;
+                        }
                     }
-                }
-            } else if (status == 500) {
-                throw new JSONException("Server error: " + responseJson.get("data"));
-            } else {
-                throw new JSONException("Unrecognized status code: " + status);
+                    break;
+
+                case 500:
+                    throw new JSONException("Server error: " + response.get("data"));
+                default:
+                    throw new JSONException("Unexpected status: " + response.getInt("status"));
+
             }
 
         } catch (JSONException e) {
@@ -266,14 +229,14 @@ public class LoginActivity extends AppCompatActivity
     }
 
     private void onLoginRequestFail() {
-        Log.d(TAG, "onLoginRequestSuccess()");
+        Log.v(TAG, "onLoginRequestSuccess");
         progressDialog.dismiss();
         Toast.makeText(this, R.string.login_error, Toast.LENGTH_SHORT).show();
     }
 
     private void requestCredentials() {
 
-        Log.d(TAG, "requestCredentials()");
+        Log.d(TAG, "requestCredentials");
 
         CredentialRequest request = new CredentialRequest.Builder().setPasswordLoginSupported(true)
                 .build();
@@ -283,7 +246,7 @@ public class LoginActivity extends AppCompatActivity
                     @Override
                     public void onResult(@NonNull CredentialRequestResult credentialRequestResult) {
                         Status status = credentialRequestResult.getStatus();
-                        if (credentialRequestResult.getStatus().isSuccess()) {
+                        if (status.isSuccess()) {
                             processRetrievedCredential(credentialRequestResult.getCredential());
                         } else if (status.getStatusCode()
                                 == CommonStatusCodes.RESOLUTION_REQUIRED) {
@@ -291,7 +254,7 @@ public class LoginActivity extends AppCompatActivity
                         } else if (status.getStatusCode() == CommonStatusCodes.SIGN_IN_REQUIRED) {
                             Log.d(TAG, "Sign in required");
                         } else {
-                            Log.w(TAG, "Unrecognized status code: " + status.getStatusCode());
+                            Log.w(TAG, "Unexpected status: " + status.getStatusCode());
                         }
                     }
                 });
@@ -308,12 +271,11 @@ public class LoginActivity extends AppCompatActivity
         }
 
         if (status.hasResolution()) {
-            Log.d(TAG, "STATUS: RESOLVING");
             try {
                 status.startResolutionForResult(this, requestCode);
                 mIsResolving = true;
             } catch (IntentSender.SendIntentException e) {
-                Log.e(TAG, "STATUS: Failed to send resolution", e);
+                Log.e(TAG, e.toString());
             }
         } else {
             goToContent();
@@ -337,7 +299,7 @@ public class LoginActivity extends AppCompatActivity
                         if (status.isSuccess()) {
                             goToContent();
                         } else {
-                            Log.d(TAG, "Could not save credential: " + status.getStatusCode() + " "
+                            Log.e(TAG, "Could not save credential: " + status.getStatusCode() + " "
                                     + status.getStatusMessage());
                             resolveResult(status, RC_SAVE);
                         }
@@ -351,15 +313,42 @@ public class LoginActivity extends AppCompatActivity
     }
 
     private void goToContent() {
-        Log.d(TAG, "goToContent()");
-        // TODO: return session ID
-        setResult(RESULT_OK);
+        Log.v(TAG, "goToContent");
+        setResult(RESULT_OK, new Intent().putExtra("sessionId", mSessionId));
         finish();
     }
 
     @Override
+    public void onShow(DialogInterface dialog) {
+        loginButton.setEnabled(false);
+    }
+
+    @Override
+    public void onCancel(DialogInterface dialog) {
+        if (loginRequest != null) {
+            loginRequest.cancel();
+        }
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        loginButton.setEnabled(true);
+    }
+
+
+    @Override
+    public void onResponse(int id, JSONObject response) {
+        onLoginRequestSuccess(response);
+    }
+
+    @Override
+    public void onError(int id, Exception error) {
+        onLoginRequestFail();
+    }
+
+    @Override
     public void onConnected(Bundle bundle) {
-        Log.d(TAG, "onConnected");
+        Log.v(TAG, "onConnected");
         requestCredentials();
     }
 

@@ -38,11 +38,14 @@
 
     <string name="err_406_email">This email is already in use</string>
 
+    <string name="login_progress">Logging you in&#8230;</string>
     <string name="login_error">An unexpected error occurred during authentication.</string>
 
+    <string name="signup_progress">Signing up&#8230;</string>
     <string name="signup_successful">Signup successful. Please check your inbox for a verification email.</string>
     <string name="signup_error">An unexpected error occurred during signup.</string>
 
+    <string name="loading_progress">Loading&#8230;</string>
     <string name="unexpected_error">An unexpected error occurred. Please try again.</string>
 
 </resources>
