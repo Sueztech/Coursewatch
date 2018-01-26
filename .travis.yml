@@ -1,0 +1,13 @@
+language: android
+android:
+  components:
+    - tools
+    - platform-tools
+    - tools
+    - build-tools-26.0.2
+    - android-26
+cache:
+  directories:
+    - $HOME/.gradle
+script:
+  - ./gradlew clean :app:generateDebugSources :app:generateDebugAndroidTestSources :app:mockableAndroidJar :app:assembleDebug :app:assembleRelease
